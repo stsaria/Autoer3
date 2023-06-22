@@ -24,36 +24,40 @@ htmlText = '''
 <html>
     <head>
         <meta charset="shift-jis" />
+        <title>Autoer3 管理画面</title>
     </head>
     <body bgcolor="lightyellow">
-        <h1>サーバー一覧</h1>
-        <h3>%s</h3>
+        <h1>Autoer3 - 管理画面</h1>
+        <h2>サーバー一覧</h2>
+        <h4>%s</h4>
         <hr/>
-        <form action="#" method="post">
+        <h2>サーバー作成</h2>
+        <form action="make.py" method="post">
+            <h4>注意 Forgeではforgeのビルド番号を求められます</br>事前にご確認ください</h4>
             <input type="text" name="server_name" placeholder="サーバー名："></p>
             <input type="text" name="server_port" placeholder="ポート番号："></p>
+            <input type="text" name="server_port" placeholder="バージョン："></p>
             <p>サーバーの種類（バニラ、プラグイン(Spigot)、Mod鯖(Forge)）：<br>
-            <select id="servermode" onclick="event();">
+            <select id="server_mode" name="server_mode" onchange="window.event();">
                 <option value="vanilla">バニラ</option>
                 <option value="spigot">Spigot</option>
                 <option value="forge">Forge</option>
             </select></p>
-            <input type="text" id="forge_id" placeholder="Forgeのビルド番号">
+            <input type="text" id="forge_id" name="forge_id" placeholder="Forgeのビルド番号">
+            <script type="text/javascript">
+                document.getElementById('forge_id').style.display = 'none'
+                console.log(document.getElementById("servermode").value)
+                function event(){
+                    console.log(document.getElementById("server_mode").value)
+                    if(document.getElementById("servermode").value == "forge"){
+                        document.getElementById('forge_id').style.display = ""
+                    } else {document.getElementById('forge_id').style.display = 'none'}
+                }
+                window.onload = event;
+            </script>
+            <p><input type="submit" value="これで作成"></p>
         </form>
-        <script type="text/javascript">
-            document.getElementById('forge_id').style.display = 'none'
-            function event(){
-                if(document.getElementById("servermode").value == "forge"){
-                    document.getElementById('forge_id').style.display = ""
-                } else {document.getElementById('forge_id').style.display = 'none'}
-            }
-            window.onload = event;
-        </script>
-            <p>お問合せ内容：<br>
-            <textarea name="comment" cols="30" rows="5"></textarea></p>
-            <p><input type="submit" value="確認する"></p>
-        </form>
-        サーバーの作成はネットワークの調子などによっても変わります。
+        <button>もう一つ作成</button>
     </body>
 </html>
 '''%(show_text) # 入力値の積を%sの箇所に埋める

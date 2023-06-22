@@ -1,46 +1,10 @@
-from .. import Autoerfun
-
-import socket
-
-'''
-   make = M , m
-   start = s
-   systemd = S
-   shfile = sf
-   serveroff = SF
-   delete = D , d
-'''
-HOST = 'localhost'
-PORT = 58797
-
-server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-server_socket.bind((HOST, PORT))
-server_socket.listen(1)
-client_socket, addr = server_socket.accept()
-
-while True:
-    data = client_socket.recv(1024)
-    if not data:
-        print("No Info")
-        break
-    result = data.decode().split(' ')
-    dostr = result[0]
-
-    if dostr == "SF":
-        print("User Stop")
-        break
-
-
-
-    print('', data.decode())
-
-client_socket.close()
-server_socket.close()
-
-import cgi
+import time, cgi, os
 form = cgi.FieldStorage()
-server_name = form.getfirst('servername')
-server_version = form.getfirst('version')
+server_name = form.getfirst('server_name')
+server_port = form.getfirst('server_port')
+server_version = form.getfirst('server_version')
+server_mode = form.getfirst('server_mode')
+forge_id = form.getfirst('forge_id')
 
 # ブラウザに戻すHTMLのデータ
 print("Content-Type: text/html")
@@ -50,10 +14,12 @@ htmlText = '''
 <html>
     <head>
         <meta charset="shift-jis" />
-        <script type="text/javascript">
-            window.onbeforeunload = function(e) {
-                e.returnValue = "ページを離れようとしています。よろしいですか？";
+        <script>
+            window.onbeforeunload = function(event){
+                event = event || window.event; 
+                event.returnValue = 'ページから移動しますか？';
             }
+            window.addEventListener('popstate', function(e) {window.onbeforeunload = "a";});
         </script>
     </head>
     <body bgcolor="lightyellow">
@@ -65,4 +31,5 @@ htmlText = '''
 ''' # 入力値の積を%sの箇所に埋める
 print( htmlText.encode("cp932", 'ignore').decode('cp932') )
 
-
+time.sleep(10)
+os.mkdir("aaa")

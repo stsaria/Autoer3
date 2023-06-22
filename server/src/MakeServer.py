@@ -74,7 +74,7 @@ def file_identification_rewriting(file_name, before, after):
     replace_setA = (before, after)
     replace_func(file_name, replace_setA)
 
-def make(server_name : str, server_port : int , server_version : str, edition : str, forge_id : str, message : bool, eula : bool):
+def make(server_name : str, server_port : int , server_version : str, edition : str, message : bool, eula : bool, forge_id = ""):
     start_jar = None
     
     dt_now        = datetime.datetime.now()
@@ -116,4 +116,4 @@ def make(server_name : str, server_port : int , server_version : str, edition : 
         f.write('['+minecraft_dir.lower()+']\nstart_jar = '+start_jar+'\nserver_name = '+server_name+'\n')
 
 
-make("test", 25565, "1.12.2", "forge", "14.23.5.2860",True,True)
+make("test", 25565, "1.12.2", "forge",True,True,"14.23.5.2860")
