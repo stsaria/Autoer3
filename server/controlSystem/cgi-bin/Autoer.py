@@ -44,6 +44,7 @@ htmlText = '''
                 <option value="forge">Forge</option>
             </select></p>
             <input type="text" id="forge_id" name="forge_id" placeholder="Forgeのビルド番号">
+            <input type="checkbox" name="eula" value="Eulaに同意する" id="eula"></p>
             <script type="text/javascript">
                 document.getElementById('forge_id').style.display = 'none'
                 console.log(document.getElementById("servermode").value)
@@ -58,7 +59,12 @@ htmlText = '''
             <p><input type="submit" value="これで作成"></p>
         </form>
         <button>もう一つ作成</button>
-    </body>
-</html>
 '''%(show_text) # 入力値の積を%sの箇所に埋める
 print( htmlText.encode("cp932", 'ignore').decode('cp932') )
+if form.getfirst('m'):
+    if form.getfirst('m') == "input_failed":
+        print('<font color="#ff0000"><h2>サーバーの作成に失敗しました 詳細:入力方式が間違っています。</h2>')
+    if form.getfirst('m') == "exception_failed":
+        print('<font color="#ff0000"><h2>サーバーの作成に失敗しました 詳細:サーバー作成時に例外が発生しました。</h2>')
+print("</body>\
+</html>")
