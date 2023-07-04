@@ -1,1 +1,1 @@
-python ./src/Autoer.py
+py -u ./src/Autoer.py start
