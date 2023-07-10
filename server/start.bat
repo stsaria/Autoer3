@@ -1,1 +1,0 @@
-py -u ./src/Autoer.py start

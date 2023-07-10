@@ -21,15 +21,20 @@ def spigot_download(minecraft_dir, server_version):
     if download_file("https://hub.spigotmc.org/jenkins/job/BuildTools/lastSuccessfulBuild/artifact/target/BuildTools.jar", minecraft_dir+"/Spigot-BuildTools.jar") == False:
         return 1
     try:
-        exec_java("./", "Spigot-BuildTools.jar", "1", "1", java_argument="-rev "+server_version)
+        exec_java(f"./{minecraft_dir}", "Spigot-BuildTools.jar", "1", "1", java_argument="-rev "+server_version)
     except:
         return 2
-    if os.path.isfile("./BuildTools.log.txt"):
-        file_readlines = open("./BuildTools.log.txt", 'r').readlines()
-        for i in file_readlines[-5:]:
-            if "success" in i.lower():
-                result = 0
-                break
+    if os.path.isfile(f"./{minecraft_dir}/BuildTools.log.txt"):
+        file_readlines = open(f"./{minecraft_dir}/BuildTools.log.txt", 'r').readlines()
+        text = ""
+        for i in file_readlines:
+            text = f"{i}\n"
+        if "success" in text.lower():
+            result = 0
+        else:
+            result = 2
+    else:
+        result = 2
     if result == 0:
         remove_files = ["Spigot", "CraftBukkit", "work", "Bukkit", "BuildData", "apache-maven-3.6.0"]
         for remove_file in remove_files:
@@ -39,18 +44,22 @@ def spigot_download(minecraft_dir, server_version):
 def install_forge_server(minecraft_dir, server_version, forge_id):
     result = None
     jar_installer_file = server_version+"-"+forge_id+"/forge-"+server_version+"-"+forge_id+"-installer.jar"
-    if download_file("https://maven.minecraftforge.net/net/minecraftforge/forge/"+server_version+"-"+forge_id+"/forge-"+server_version+"-"+forge_id+"-installer.jar", minecraft_dir+"/forge-"+server_version+"-"+forge_id+"-installer.jar")  == False:
+    if download_file(f"https://maven.minecraftforge.net/net/minecraftforge/forge/forge-{server_version}-{forge_id}-installer.jar", f"{minecraft_dir}/forge-{server_version}-{forge_id}-installer.jar")  == False:
         return 1
     try:
-        exec_java(minecraft_dir, "forge-"+server_version+"-"+forge_id+"-installer.jar", "1", "1", java_argument="--installServer")
+        exec_java(minecraft_dir, f"forge-{server_version}-{forge_id}-installer.jar", "1", "1", java_argument="--installServer")
     except:
         return 2
-    if os.path.isfile(minecraft_dir+"/installer.log"):
-        file_readlines = open(minecraft_dir+"/installer.log", 'r').readlines()
-        for i in file_readlines[-5:]:
-            if "success" in i:
-                result = 0
-                break
+    if not os.path.isfile(f"{minecraft_dir}/installer.log"):
+        return 2
+    file_readlines = open(f"{minecraft_dir}/installer.log", 'r').readlines()
+    text = ""
+    for i in file_readlines[-5:]:
+        text = f"{i}\n"
+    if "success" in text.lower():
+        result = 0
+    else:
+        result = 2
     return result
 
 def get_minecraft_url(version):
@@ -108,7 +117,7 @@ def make(server_name : str, server_port : int , server_version : str, edition : 
                 return 3, ""
             start_jar = "server.jar"
         case 'spigot':
-            match spigot_download(server_version):
+            match spigot_download(minecraft_dir, server_version):
                 case 0:
                     pass
                 case 1:
