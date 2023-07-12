@@ -1,4 +1,4 @@
-import MakeServer, ControlServer, requests, sys
+import MakeServer, ControlServer, requests, socket, sys
 from TextJudgement import yes_no_text, true_false_string
 version = 0.1
 edition = "alpha"
@@ -63,6 +63,32 @@ def make():
 def main(args : list):
     if args == 1:
         print("Autoer3-Server\nVersion : "+version+"-"+edition)
+        args_list_message = """
+        Autoer.py -[s,m,r,cp,sl] [etc_args] -path [path]
+        ※起動モード(-[s,m,r,cp])だけで起動した場合はすべてのモードでウィザードが出ます
+        引数欄:
+            起動モード:
+                -s,-m : 作成
+                (方法 : Autoer.py -m [server_name(スペース, タブなし)] [server_port(1~65535)] [server_version] [eula(true or false)] [server_edition(vanilla, spigot, forge)] [forge_build_id(Forge使用時のみ)])
+                
+                -R : 削除
+                (方法 : Autoer.py -R [server_id (サーバー作成時に発行されたID(-S(サーバーリスト表示)でIDを確認することができます))])
+
+                -r : 起動
+                (方法 : Autoer.py -r [server_id (サーバー作成時に発行されたID(-S(サーバーリスト表示)でIDを確認することができます))] [Xms(int)(最小メモリ)] [Xmx(int)(最大メモリ)])
+
+                -sl : サーバーリストの表示
+                (方法 : Autoer.py -sl)
+                
+                -cp : サーバーのポート変更
+                (方法 : Autoer.py -c [server_id (サーバー作成時に発行されたID(-S(サーバーリスト表示)でIDを確認することができます))] [server_new_port(1~65535)])
+
+                -sysdm,-sysds サーバーをSystemd Deamon,スタートアップに登録する(自動起動設定)(※管理者権限が必須です)
+                (方法 : Autoer.py -sysdm [server_id (サーバー作成時に発行されたID(-S(サーバーリスト表示)でIDを確認することができます))])
+
+                -sysdr サーバーのSystemd Deamon,スタートアップを削除する(自動起動設定)(※管理者権限が必須です)
+                (方法 : Autoer.py -sysdr [server_id (サーバー作成時に発行されたID(-S(サーバーリスト表示)でIDを確認することができます))])
+        """
     else:
         if args[1] == "-s" or args[1] == "-m":
             result = ""
@@ -74,6 +100,14 @@ def main(args : list):
                 if not str(args[3]).isdigit():
                     print("入力フォーマットが間違っています")
                     return 7
+                max_port = 6000
+                sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+                return_code = sock.connect_ex(("127.0.0.1", int(args[3])))
+                sock.close()
+                if return_code == 0:
+                    print("警告 : このポートは使用されています")
+
+                print("Complete!")
                 try:
                     result = MakeServer.make(str(args[2]), int(str(args[3])), str(args[4]), str(args[6]), True, true_false_string(str(args[5])), forge_id, )
                 except InterruptedError:
@@ -101,18 +135,19 @@ def main(args : list):
             else:
                 print(f"サーバーの作成に成功しました\n作成したサーバー名 : {result[1]}")
                 return 0
-        if args[1] == "-changeport":
+        if args[1] == "-cp":
             result = ""
+            path = ""
             if len(args) >= 4:
                 if not str(args[3]).isdigit():
                     print("入力フォーマットが間違っています")
                     return 7
-                result = ControlServer.change_port(args[2], args[3])
+                result = ControlServer.change_port(args[2], int(args[3]))
                 if result != 0:
                     error_text = ""
                     match result:
                         case 1:
-                            error_text = "サーバーの管理ファイルが存在しません\n※ディレクトリはのターゲットは作成時と同じである必要があります"
+                            error_text = "サーバーの管理ファイルが存在しません\n※ディレクトリはのターゲットは作成時と同じである必要があります\n※ディレクトリを指定したい場合は-pathをつけて実行してください"
                         case 2:
                             error_text = "サーバーの管理ファイルの中身が空です\n※ディレクトリはのターゲットは作成時と同じである必要があります"
                         case 3:
@@ -121,12 +156,14 @@ def main(args : list):
                             error_text = "サーバー設定ファイル(server.properties)が存在しません\n※ディレクトリはのターゲットは作成時と同じである必要があります"
                         case 5:
                             error_text = "ファイルの書き込み中にエラーが発生しました"
+                        case 6:
+                            error_text = "ポートの番号が範囲外です\n※ポート番号は1~65535までです"
                     print("ポートの変更に失敗しました\n"+error_text)
                     return result
                 else:
                     print("ポートの変更に成功しました")
                     return 0
-        if args[1] == "-serverlist":
+        if args[1] == "-sl":
             result = ""
             result = ControlServer.server_list()
             if result[0] != 0:
@@ -140,9 +177,7 @@ def main(args : list):
                 return result[0]
             else:
                 for i in result[2]:
-                    print(f"サーバー名 : {i[1]}", f"作成日時 : ")
-                
-
+                    print(f"サーバーID : {i[0].replace('minecraft/', '')}", "サーバー名 : {i[1].replace('minecraft/', '')}", f"作成日時 : {i[1].replace('minecraft/minecraft-', '')}", f"サーバーバージョン : {i[2]}")
         if args[1] == "-r":
             pass
 

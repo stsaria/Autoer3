@@ -1,7 +1,7 @@
 import datetime, requests, shutil, json, os
 from Javasystem.etc import exec_java
 
-backslash = r'\\'
+backslash = '\\'
 
 def download_file(url : str, save_name : str, user_agent = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.114 Safari/537.36"):
     try:
@@ -102,6 +102,7 @@ def make(server_name : str, server_port : int , server_version : str, edition : 
     dt_now        = datetime.datetime.now()
     dt_now_utc    = datetime.datetime.now(datetime.timezone.utc)
     minecraft_dir = "minecraft/minecraft-"+dt_now.strftime('%Y-%m-%d-%H-%M-%S-%f')
+    absolute_path = os.getcwd().replace("\\", "/")
 
     os.makedirs("data", exist_ok=True)
     os.makedirs(minecraft_dir, exist_ok=True)
@@ -147,7 +148,7 @@ def make(server_name : str, server_port : int , server_version : str, edition : 
         with open(minecraft_dir+"/eula.txt", mode='a') as f:
             f.write("#By changing the setting below to TRUE you are indicating your agreement to our EULA (https://account.mojang.com/documents/minecraft_eula).\n#"+dt_now_utc.strftime('%a')+" "+dt_now_utc.strftime('%b')+" "+dt_now_utc.strftime('%d')+" "+dt_now_utc.strftime('%H:%M:%S')+" "+str(dt_now_utc.tzinfo)+" "+dt_now_utc.strftime('%Y')+"\neula="+str(eula))
         with open("./data/setting.ini", mode='a') as f:
-            f.write(f"[{minecraft_dir.lower()}]\nserver_name = {server_name}\nversion = {server_version}\nstart_jar = {start_jar}\nabsolute_path = {os.getcwd().replace(r"\", r"")}\n")
+            f.write(f"[{minecraft_dir.lower()}]\nserver_name = {server_name}\nversion = {server_version}\nstart_jar = {start_jar}\nabsolute_path = {absolute_path+minecraft_dir}\n")
     except:
         return 6, ""
     return 0, minecraft_dir.replace('minecraft/' , '')
