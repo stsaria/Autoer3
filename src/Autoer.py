@@ -1,4 +1,4 @@
-import MakeServer, requests, sys
+import MakeServer, ControlServer, requests, sys
 from TextJudgement import yes_no_text, true_false_string
 version = 0.1
 edition = "alpha"
@@ -96,15 +96,52 @@ def main(args : list):
                         error_text = "Forgeインストール時にエラーが発生しました"
                     case 6:
                         error_text = "ファイルの書き込み中にエラーが発生しました"
-                print("サーバーの作成に失敗しました\n"+error_text)
+                print(f"サーバーの作成に失敗しました\n{error_text}")
                 return result[0]
             else:
-                print("サーバーの作成に成功しました\n"+result[1])
+                print(f"サーバーの作成に成功しました\n作成したサーバー名 : {result[1]}")
                 return 0
-        if args[1] == "-c":
-            if len(args) - 2 >= 2:
-                if args[2] == "changeport":
-                        pass
+        if args[1] == "-changeport":
+            result = ""
+            if len(args) >= 4:
+                if not str(args[3]).isdigit():
+                    print("入力フォーマットが間違っています")
+                    return 7
+                result = ControlServer.change_port(args[2], args[3])
+                if result != 0:
+                    error_text = ""
+                    match result:
+                        case 1:
+                            error_text = "サーバーの管理ファイルが存在しません\n※ディレクトリはのターゲットは作成時と同じである必要があります"
+                        case 2:
+                            error_text = "サーバーの管理ファイルの中身が空です\n※ディレクトリはのターゲットは作成時と同じである必要があります"
+                        case 3:
+                            error_text = "サーバーの管理ファイルに指定したサーバーがありません。"
+                        case 4:
+                            error_text = "サーバー設定ファイル(server.properties)が存在しません\n※ディレクトリはのターゲットは作成時と同じである必要があります"
+                        case 5:
+                            error_text = "ファイルの書き込み中にエラーが発生しました"
+                    print("ポートの変更に失敗しました\n"+error_text)
+                    return result
+                else:
+                    print("ポートの変更に成功しました")
+                    return 0
+        if args[1] == "-serverlist":
+            result = ""
+            result = ControlServer.server_list()
+            if result[0] != 0:
+                error_text = ""
+                match result:
+                    case 1:
+                        error_text = "サーバーの管理ファイルが存在しません\n※ディレクトリはのターゲットは作成時と同じである必要があります"
+                    case 2:
+                        error_text = "サーバーの管理ファイルの中身が空です\n※ディレクトリはのターゲットは作成時と同じである必要があります"
+                print("サーバーリストの取得に失敗しました")
+                return result[0]
+            else:
+                for i in result[2]:
+                    print(f"サーバー名 : {i[1]}", f"作成日時 : ")
+                
 
         if args[1] == "-r":
             pass
