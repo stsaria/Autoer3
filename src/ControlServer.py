@@ -160,23 +160,27 @@ def del_server(server_id):
         return 4
     return 0
 
-def change_port(server_id, port):
+def change_port(server_id : str, port : int):
     result = server_list()
+    identification_server = None
+
     if result[0] != 0:
         return result[0]
-    for i in result[2]:
-        if server_id in i:
+    for i in range(len(result[2])):
+        if server_id == result[2][i][0]:
             identification_server = i
     if identification_server == None:
-        return 2
-    
-    path = f"./{result[2][i][0]}"
+        return 3
+    else:
+        path = f"{result[2][int(str(identification_server))][4]}"
+        print(path)
     if not os.path.isfile(f"{path}/server.properties"):
         return 4
     try:
         file_identification_rewriting(f"{path}/server.properties",
-                                            "server-port=", "server-port="+port+"\n")
-    except:
+                                            "server-port=", "server-port="+str(port)+"\n")
+    except Exception as e:
+        print(e)
         return 5
     return 0
     
