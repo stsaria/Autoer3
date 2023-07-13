@@ -1,4 +1,4 @@
-import configparser, os
+import configparser, subprocess, platform, shutil,  os, etc
 
 def replace_func(fname, replace_set):
     target, replace = replace_set
@@ -19,29 +19,158 @@ def file_identification_rewriting(file_name, before, after):
 
 def server_list():
     servers = []
-    if not os.path.isfile("./data/setting.ini"):
-        return 1
+    if not os.path.isfile("./data/setting.ini") or not os.path.isfile("./data/unsetting.ini"):
+        return 1, "server_id", servers
     ini = configparser.ConfigParser()
-    ini.read('./data/config.ini', 'UTF-8')
-    if list(ini)[1:] < 1:
-        return 2
-    for i in list(ini)[1:]:
+    ini.read('./data/setting.ini', 'UTF-8')
+    unini = configparser.ConfigParser()
+    unini.read('./data/unsetting.ini', 'UTF-8')
+    server_id = list(ini)[1:]
+    if len(server_id) < 1:
+        return 2, "server_id", servers
+    for i in range(len(server_id)):
+        if server_id[i] in list(unini)[1:]:
+            server_id.remove(server_id[i])
+    for i in server_id:
         server_name = ini[i]['server_name']
         version = ini[i]['version']
         start_jar = ini[i]['start_jar']
-        servers.append([i, server_name, version, start_jar])
-    return 0, list(ini)[1:], servers
+        absolute_path = ini[i]['absolute_path']
+        servers.append([i.replace('minecraft/', ''), server_name, version, start_jar, absolute_path])
+    return 0, server_id, servers
 
-def start_server(server_id):
-    pass
-
-def change_port(server, port):
-    result = server_list()[0]
-    if result != 0:
-        return result
-    if not server in result:
+def start_server(server_id, xms = 1, xmx = 1):
+    identification_server = None
+    user_use_platfrom = platform.system()
+    result = server_list()
+    if result[0] != 0:
+        return result[0]
+    for i in range(len(result[2])):
+        if server_id == result[2][i][0]:
+            identification_server = i
+    if identification_server == None:
         return 3
-    path = f"./{server}"
+    else:
+        path = f"{result[2][int(str(identification_server))][4]}"
+    if int(xms) < 1 or int(xmx) < 1:
+        return 4
+    try:
+        result = subprocess.call(f"java -Xmx{xmx}G -Xms{xms}G -jar {result[2][int(str(identification_server))][3]} nogui", shell=True, cwd=f"{path}/")
+        if result.returncode != 0:
+            raise SystemExit()
+    except SystemExit:
+        return 5
+    except KeyboardInterrupt:
+        pass
+    return 0
+
+def add_startup(server_id, xms = 1, xmx = 1):
+    identification_server = None
+    if etc.is_admin() == False:
+        return 3
+    user_use_platfrom = platform.system()
+    result = server_list()
+    if result[0] != 0:
+        return result[0]
+    for i in range(len(result[2])):
+        if server_id == result[2][i][0]:
+            identification_server = i
+    if identification_server == None:
+        return 4
+    else:
+        path = f"{result[2][int(str(identification_server))][4]}"
+    if int(xms) < 1 or int(xmx) < 1:
+        return 5
+    try:
+        if user_use_platfrom == "Windows":
+            file = open(f"C:/ProgramData/Microsoft/Windows/Start Menu/Programs/StartUp/{server_id}.bat", mode='w')
+            file.write(f"java -Xms{xms}G -Xmx{xmx}G -jar {path}/{result[2][i][3]} nogui \n\
+                        pause")
+            file.close()
+        else:
+            if not shutil.which('systemctl'):
+                return 6
+            file = open(f"/etc/systemd/system/{server_id}.service", mode='w')
+            file.write(f"[Unit] \
+            \nDescription=Minecraft Server: %i \
+            \nAfter=network.target \
+            \n[Service] \
+            \nWorkingDirectory={path} \
+            \nRestart=always \
+            \nExecStart=/usr/bin/java -Xms{xms}G -Xmx{xmx}G -jar {result[2][i][3]} nogui \
+            \n[Install] \
+            \nWantedBy=multi-user.target")
+            file.close()
+            subprocess.run("sudo systemctl daemon-reload", shell=True)
+            subprocess.run("sudo systemctl enable minecraft"+path.replace('/', '').replace('minecraft', ''), shell=True)
+    except:
+        return 6
+    return 0
+
+def del_startup(server_id):
+    identification_server = None
+    if etc.is_admin() == False:
+        return 3
+    user_use_platfrom = platform.system()
+    result = server_list()
+    if result[0] != 0:
+        return result[0]
+    for i in range(len(result[2])):
+        if server_id == result[2][i][0]:
+            identification_server = i
+    if identification_server == None:
+        return 4
+    else:
+        path = f"{result[2][int(str(identification_server))][4]}"
+    if os.path.isfile(f"/etc/systemd/system/{server_id}.service") or os.path.isfile(f"C:/ProgramData/Microsoft/Windows/Start Menu/Programs/StartUp/{server_id}.bat"):
+        try:
+            if user_use_platfrom == "Windows":
+                os.remove(f"C:/ProgramData/Microsoft/Windows/Start Menu/Programs/StartUp/{server_id}.bat")
+            elif user_use_platfrom == "Linux":
+                if not shutil.which('systemctl'):
+                    return 6
+                os.remove(f"/etc/systemd/system/{server_id}.service")
+                subprocess.run("systemctl daemon-reload", shell=True)
+        except:
+            return 6
+    else:
+        return 5
+    return 0
+
+def del_server(server_id):
+    result = server_list()
+    absolute_path = os.getcwd().replace("\\", "/")
+    identification_server = None
+
+    if result[0] != 0:
+        return result[0]
+    for i in range(len(result[2])):
+        if server_id == result[2][i][0]:
+            identification_server = i
+    if identification_server == None:
+        return 3
+    else:
+        path = f"{result[2][int(str(identification_server))][4]}"
+    try:
+        with open("./data/unsetting.ini", mode='a') as f:
+            f.write(f"[minecraft/{result[2][int(str(identification_server))][0]}]\nserver_name = {result[2][int(str(identification_server))][1]}\nversion = {result[2][int(str(identification_server))][2]}\nabsolute_path = {absolute_path}/minecraft/{result[2][int(str(identification_server))][0].lower()}\n")
+        shutil.rmtree(path)
+    except Exception as e:
+        print(e)
+        return 4
+    return 0
+
+def change_port(server_id, port):
+    result = server_list()
+    if result[0] != 0:
+        return result[0]
+    for i in result[2]:
+        if server_id in i:
+            identification_server = i
+    if identification_server == None:
+        return 2
+    
+    path = f"./{result[2][i][0]}"
     if not os.path.isfile(f"{path}/server.properties"):
         return 4
     try:

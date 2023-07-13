@@ -148,7 +148,11 @@ def make(server_name : str, server_port : int , server_version : str, edition : 
         with open(minecraft_dir+"/eula.txt", mode='a') as f:
             f.write("#By changing the setting below to TRUE you are indicating your agreement to our EULA (https://account.mojang.com/documents/minecraft_eula).\n#"+dt_now_utc.strftime('%a')+" "+dt_now_utc.strftime('%b')+" "+dt_now_utc.strftime('%d')+" "+dt_now_utc.strftime('%H:%M:%S')+" "+str(dt_now_utc.tzinfo)+" "+dt_now_utc.strftime('%Y')+"\neula="+str(eula))
         with open("./data/setting.ini", mode='a') as f:
-            f.write(f"[{minecraft_dir.lower()}]\nserver_name = {server_name}\nversion = {server_version}\nstart_jar = {start_jar}\nabsolute_path = {absolute_path+minecraft_dir}\n")
+            f.write(f"[{minecraft_dir.lower()}]\nserver_name = {server_name}\nversion = {server_version}\nstart_jar = {start_jar}\nabsolute_path = {absolute_path}/{minecraft_dir}\n")
+        f = open("./data/unsetting.ini", 'a')
+        f.write("")
+        f.close()
+
     except:
         return 6, ""
     return 0, minecraft_dir.replace('minecraft/' , '')
