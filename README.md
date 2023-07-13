@@ -4,6 +4,11 @@
 Autoer3とはAutoer系統のプログラムです
 <br/>Autoerはマイクラを半自動作成するプログラムです
 
+## 条件
+1.ネットワーク環境がある
+<br/>2.Python3.10以上
+<br/>3.requestsがインストールされてる
+
 ## 導入
 1.Releaseからソースコードをダウンロードします
 <br/>2.Pythonのrequestsをダウンロードします
