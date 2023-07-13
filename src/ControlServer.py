@@ -36,7 +36,8 @@ def server_list():
         version = ini[i]['version']
         start_jar = ini[i]['start_jar']
         absolute_path = ini[i]['absolute_path']
-        servers.append([i.replace('minecraft/', ''), server_name, version, start_jar, absolute_path])
+        make_user = ini[i]['make_user']
+        servers.append([i.replace('minecraft/', ''), server_name, version, start_jar, absolute_path, make_user])
     return 0, server_id, servers
 
 def start_server(server_id, xms = 1, xmx = 1):
@@ -64,7 +65,7 @@ def start_server(server_id, xms = 1, xmx = 1):
         pass
     return 0
 
-def add_startup(server_id, xms = 1, xmx = 1):
+def add_startup(server_id, xms = 1, xmx = 1, systemd_mode = 0):
     identification_server = None
     if etc.is_admin() == False:
         return 3
@@ -90,19 +91,25 @@ def add_startup(server_id, xms = 1, xmx = 1):
         else:
             if not shutil.which('systemctl'):
                 return 6
+            exec_start = f"/usr/bin/java -Xms{xms}G -Xmx{xmx}G -jar {result[2][i][3]} nogui"
+            if systemd_mode == 1:
+                if not shutil.which('screen'):
+                    return 6
+                exec_start = f"/usr/bin/screen -DmS server_id /usr/bin/java -Xms{xms}G -Xmx{xmx}G -jar {result[2][i][3]} nogui"
             file = open(f"/etc/systemd/system/{server_id}.service", mode='w')
             file.write(f"[Unit] \
             \nDescription=Minecraft Server: %i \
             \nAfter=network.target \
             \n[Service] \
             \nWorkingDirectory={path} \
+            \nUser={result[2][int(str(identification_server))][5]}\
             \nRestart=always \
-            \nExecStart=/usr/bin/java -Xms{xms}G -Xmx{xmx}G -jar {result[2][i][3]} nogui \
+            \nExecStart={exec_start}\
             \n[Install] \
             \nWantedBy=multi-user.target")
             file.close()
-            subprocess.run("sudo systemctl daemon-reload", shell=True)
-            subprocess.run("sudo systemctl enable minecraft"+path.replace('/', '').replace('minecraft', ''), shell=True)
+            subprocess.run("systemctl daemon-reload", shell=True)
+            subprocess.run(f"systemctl enable /etc/systemd/system/{server_id}.service", shell=True)
     except:
         return 6
     return 0

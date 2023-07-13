@@ -1,8 +1,6 @@
-import MakeServer, ControlServer, requests, socket, sys
+import MakeServer, ControlServer, platform, requests, socket, sys
 from TextJudgement import yes_no_text, true_false_string
 from Javasystem import check
-version = 0.1
-edition = "alpha"
 
 def get_http_status_code(url : str):
     r = requests.get(url)
@@ -183,12 +181,15 @@ def main(args : list):
                     return 0
         if args[1] == "-sysdm":
             result = ""
+            systemd_mode = 0
             if len(args) >= 5:
                 if not str(args[3]).isdigit() or not str(args[4]).isdigit():
                     print("入力フォーマットが間違っています")
                     return 7
-                
-                result = ControlServer.add_startup(args[2], int(args[3]), int(args[4]))
+                if len(args) >= 6:
+                    if args[5] == "-screen":
+                        systemd_mode = 1
+                result = ControlServer.add_startup(args[2], int(args[3]), int(args[4]), systemd_mode)
                 if result != 0:
                     error_text = ""
                     match result:
@@ -207,7 +208,11 @@ def main(args : list):
                     print("自動起動設定に失敗しました\n"+error_text)
                     return result
                 else:
-                    print("自動起動設定に成功しました")
+                    print("自動起動設定に成功しました\n※まだ起動していませんのでご注意ください")
+                    if not platform.system() == "Windows":
+                        print(f"立ち上げ : systemctl start {args[2]}\n終了 : systemctl stop {args[2]}\n動作状況表示 : systemctl status {args[2]}")
+                        if systemd_mode == 1:
+                            print(f"マイクラのコンソールを表示するときは以下のコマンドをお使いください\nscreen -r {args[2]}\n終了する際はCtrl+A+Dです")
                     return 0
         if args[1] == "-sysdr":
             result = ""
