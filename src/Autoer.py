@@ -247,7 +247,7 @@ def main(args : list):
                 return result[0]
             else:
                 for i in result[2]:
-                    print(f"サーバーID : {i[0]}", f"サーバー名 : {i[1].replace('minecraft/', '')}", f"作成日時 : {i[1].replace('minecraft/minecraft-', '')}", f"サーバーバージョン : {i[2]}")
+                    print(f"サーバーID : {i[0]}", f"サーバー名 : {i[1].replace('minecraft/', '')}", f"サーバーバージョン : {i[2]}")
         if args[1] == "-r":
             result = ""
             if len(args) >= 5:
