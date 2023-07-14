@@ -26,8 +26,8 @@ def spigot_download(minecraft_dir, server_version):
         exec_java(f"./{minecraft_dir}", "Spigot-BuildTools.jar", "1", "1", java_argument="-rev "+server_version)
     except:
         return 2
-    if os.path.isfile(f"./{minecraft_dir}/BuildTools.log.txt"):
-        file_readlines = open(f"./{minecraft_dir}/BuildTools.log.txt", 'r').readlines()
+    if os.path.isfile(f"./{minecraft_dir}/BuildTools.log"):
+        file_readlines = open(f"./{minecraft_dir}/BuildTools.log", 'r').readlines()
         text = ""
         for i in file_readlines:
             text = f"{i}\n"
