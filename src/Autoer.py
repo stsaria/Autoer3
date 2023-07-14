@@ -62,29 +62,29 @@ def make():
 def main(args : list):
     if len(args) == 1:
         args_list_message = """
-        Autoer.py -[s,m,r,cp,sl] [etc_args] -path [path]
+        Autoer -[s,m,r,cp,sl] [etc_args] -path [path]
         引数欄:
             起動モード:
                 -s,-m : 作成
-                (方法 : Autoer.py -m [server_name(スペース, タブなし)] [server_port(1~65535)] [server_version] [eula(true or false)] [server_edition(vanilla, spigot, forge)] [forge_build_id(Forge使用時のみ)])
+                (方法 : -m [server_name(スペース, タブなし)] [server_port(1~65535)] [server_version] [eula(true or false)] [server_edition(vanilla, spigot, forge)] [forge_build_id(Forge使用時のみ)])
                 
                 -R : 削除
-                (方法 : Autoer.py -R [server_id (サーバー作成時に発行されたID(-S(サーバーリスト表示)でIDを確認することができます))])
+                (方法 : -R [server_id (サーバー作成時に発行されたID(-S(サーバーリスト表示)でIDを確認することができます))])
 
                 -r : 起動
-                (方法 : Autoer.py -r [server_id (サーバー作成時に発行されたID(-S(サーバーリスト表示)でIDを確認することができます))] [Xms(int)(最小メモリ)] [Xmx(int)(最大メモリ)])
+                (方法 : -r [server_id (サーバー作成時に発行されたID(-S(サーバーリスト表示)でIDを確認することができます))] [Xms(int)(最小メモリ)] [Xmx(int)(最大メモリ)])
 
                 -sl : サーバーリストの表示
-                (方法 : Autoer.py -sl)
+                (方法 : -sl)
                 
                 -cp : サーバーのポート変更
-                (方法 : Autoer.py -c [server_id (サーバー作成時に発行されたID(-S(サーバーリスト表示)でIDを確認することができます))] [server_new_port(1~65535)])
+                (方法 : -c [server_id (サーバー作成時に発行されたID(-S(サーバーリスト表示)でIDを確認することができます))] [server_new_port(1~65535)])
 
                 -sysdm,-sysds サーバーをSystemd Deamon,スタートアップに登録する(自動起動設定)(※管理者権限が必須です)
-                (方法 : Autoer.py -sysdm [server_id (サーバー作成時に発行されたID(-S(サーバーリスト表示)でIDを確認することができます))] [Xms(int)(最小メモリ)] [Xmx(int)(最大メモリ)])
+                (方法 : -sysdm [server_id (サーバー作成時に発行されたID(-S(サーバーリスト表示)でIDを確認することができます))] [Xms(int)(最小メモリ)] [Xmx(int)(最大メモリ)])
 
                 -sysdr サーバーのSystemd Deamon,スタートアップを削除する(自動起動設定)(※管理者権限が必須です)
-                (方法 : Autoer.py -sysdr [server_id (サーバー作成時に発行されたID(-S(サーバーリスト表示)でIDを確認することができます))])
+                (方法 : -sysdr [server_id (サーバー作成時に発行されたID(-S(サーバーリスト表示)でIDを確認することができます))])
         """
         print(args_list_message)
     for i in range(5):
