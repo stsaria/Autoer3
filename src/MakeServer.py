@@ -11,7 +11,7 @@ def download_file(url : str, save_name : str, user_agent = "Mozilla/5.0 (Macinto
             'User-Agent': user_agent
         }
         response = requests.get(url, headers=header)
-        if not response.status_code[:1] in [2,3]:
+        if not str(response.status_code)[:1] in ["2","3"]:
             return False
         with open(save_name ,mode='wb') as f:
             f.write(response.content)
