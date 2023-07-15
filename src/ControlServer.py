@@ -56,8 +56,8 @@ def start_server(server_id, xms = 1, xmx = 1):
     if int(xms) < 1 or int(xmx) < 1:
         return 4
     try:
-        result = subprocess.call(f"java -Xmx{xmx}G -Xms{xms}G -jar {result[2][int(str(identification_server))][3]} nogui", shell=True, cwd=f"{path}/", check=True)
-    except subprocess.CalledProcessError as e:
+        result = subprocess.run(f"java -Xmx{xmx}G -Xms{xms}G -jar {result[2][int(str(identification_server))][3]} nogui", shell=True, cwd=f"{path}/", check=True)
+    except Exception as e:
         return 5
     except KeyboardInterrupt:
         pass
