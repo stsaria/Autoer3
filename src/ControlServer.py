@@ -83,7 +83,8 @@ def add_startup(server_id, xms = 1, xmx = 1, systemd_mode = 0):
     try:
         if user_use_platfrom == "Windows":
             file = open(f"C:/ProgramData/Microsoft/Windows/Start Menu/Programs/StartUp/{server_id}.bat", mode='w')
-            file.write(f"java -Xms{xms}G -Xmx{xmx}G -jar {path}/{result[2][i][3]} nogui \n\
+            file.write(f"cd {path}\n\
+                        java -Xms{xms}G -Xmx{xmx}G -jar {result[2][i][3]} nogui \n\
                         pause")
             file.close()
         else:
