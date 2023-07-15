@@ -99,7 +99,7 @@ def main(args : list):
             if len(args) - 2 >= 5:
                 forge_id = ""
                 if len(args) - 2 >= 6:
-                    forge_id = len(args)
+                    forge_id = args[7]
                 if not str(args[3]).isdigit():
                     print("入力フォーマットが間違っています")
                     return 7
@@ -110,7 +110,7 @@ def main(args : list):
                 if return_code == 0:
                     print("警告 : このポートは使用されています")
                 try:
-                    result = MakeServer.make(str(args[2]), int(str(args[3])), str(args[4]), str(args[6]), True, true_false_string(str(args[5])), forge_id, )
+                    result = MakeServer.make(str(args[2]), int(str(args[3])), str(args[4]), str(args[6]), True, true_false_string(str(args[5])), str(forge_id))
                 except InterruptedError:
                     print("入力フォーマットが間違っています")
                     return 7
