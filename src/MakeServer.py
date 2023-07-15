@@ -104,7 +104,7 @@ def make(server_name : str, server_port : int , server_version : str, edition : 
                     return 3, ""
                 case 2:
                     return 4, ""
-            start_jar = "server.jar"
+            start_jar = f"spigot-{server_version}.jar"
         case 'forge':
             match install_forge_server(minecraft_dir, server_version, forge_id):
                 case 0:
