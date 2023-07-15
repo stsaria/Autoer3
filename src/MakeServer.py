@@ -33,7 +33,8 @@ def spigot_download(minecraft_dir, server_version):
 def install_forge_server(minecraft_dir, server_version, forge_id):
     result = None
     if download_file(f"https://maven.minecraftforge.net/net/minecraftforge/forge/{server_version}-{forge_id}/forge-{server_version}-{forge_id}-installer.jar", f"{minecraft_dir}/forge-{server_version}-{forge_id}-installer.jar")  == False:
-        return 1
+        if download_file(f"https://maven.minecraftforge.net/net/minecraftforge/forge/{server_version}-{forge_id}-{server_version}/forge-{server_version}-{forge_id}-{server_version}-installer.jar", f"{minecraft_dir}/forge-{server_version}-{forge_id}-installer.jar")  == False:
+            return 1
     try:
         exec_java(minecraft_dir, f"forge-{server_version}-{forge_id}-installer.jar", "1", "1", java_argument="--installServer")
         result = 0
@@ -114,8 +115,14 @@ def make(server_name : str, server_port : int , server_version : str, edition : 
                 case 2:
                     return 5, ""
             start_jar = "forge-"+server_version+"-"+forge_id+".jar"
+            if not os.path.isfile(f"{minecraft_dir}/{start_jar}"):
+                start_jar = start_jar.replace('.jar', '')+"-universal.jar"
+                if not os.path.isfile(f"{minecraft_dir}/{start_jar}"):
+                    start_jar = start_jar.replace('-universal.jar', '')+f"-{server_version}-universal.jar"
+                    if not os.path.isfile(f"{minecraft_dir}/{start_jar}"):
+                        return 5, ""
         case _:
-            return 1, ""
+            return 2, ""
     
     if download_file("https://server.properties/", minecraft_dir+"/server.properties") == False:
         return 3, ""
