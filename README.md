@@ -1,5 +1,7 @@
 # Autoer3
 
+<img alt="GitHub tag (latest SemVer pre-release)" src="https://img.shields.io/github/v/tag/stsaria/Autoer3?include_prereleases" style="display: flex;">　<img alt="GitHub all releases" src="https://img.shields.io/github/downloads/stsaria/Autoer3/total" style="display: flex;">　<img alt="GitHub license" src="https://img.shields.io/github/license/stsaria/Autoer3" style="display: flex;">　<img alt="GitHub repo size" src="https://img.shields.io/github/repo-size/stsaria/Autoer3" style="display: flex;">
+
 ## Autoer3とAutoerとは
 Autoer3とはAutoer系統のプログラムです
 <br/>Autoerはマイクラを半自動作成するプログラムです
