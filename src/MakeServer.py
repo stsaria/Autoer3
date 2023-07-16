@@ -19,7 +19,78 @@ def download_file(url : str, save_name : str, user_agent = "Mozilla/5.0 (Macinto
     except:
         return False
 
-def spigot_download(minecraft_dir, server_version):
+def install_bungeecord_server(server_name : str, server_port : int):
+    bungeecord_first_text = f"""
+forge_support: false
+player_limit: 20
+permissions:
+default:
+- bungeecord.command.server
+- bungeecord.command.list
+admin:
+- bungeecord.command.alert
+- bungeecord.command.end
+- bungeecord.command.ip
+- bungeecord.command.reload
+timeout: 30000
+log_commands: false
+online_mode: true
+disabled_commands:
+- disabledcommandhere
+servers:
+lobby:
+    motd: '&1Just another BungeeCord - Forced Host'
+    address: localhost:25566
+    restricted: false
+listeners:
+- query_port: {str(server_port)}
+motd: '&1Another Bungee server'
+tab_list: GLOBAL_PING
+query_enabled: false
+proxy_protocol: false
+forced_hosts:
+    pvp.md-5.net: pvp
+ping_passthrough: false
+priorities:
+- lobby
+bind_local_address: true
+host: 0.0.0.0:25566
+max_players: 20
+tab_size: 60
+force_default_server: false
+ip_forward: true
+network_compression_threshold: 256
+prevent_proxy_connections: false
+groups:
+md_5:
+- admin
+connection_throttle: 4000
+stats: 25e4c7af-20e1-4c5b-82c6-3397aadd0a4b
+connection_throttle_limit: 3
+log_pings: true"""
+
+    dt_now        = datetime.datetime.now()
+    bungeecord_dir = "minecraft/bungeecord-"+dt_now.strftime('%Y-%m-%d-%H-%M-%S-%f')
+    absolute_path = os.getcwd().replace("\\", "/")
+
+    os.makedirs("data", exist_ok=True)
+    os.makedirs(bungeecord_dir, exist_ok=True)
+
+    if download_file("https://ci.md-5.net/job/BungeeCord/lastSuccessfulBuild/artifact/bootstrap/target/BungeeCord.jar", bungeecord_dir+"/BungeeCord.jar") == False:
+        return 1, ""
+    try:
+        with open(bungeecord_dir+"/config.yml", mode='w') as f:
+            f.write(bungeecord_first_text)
+        with open("./data/setting.ini", mode='a') as f:
+            f.write(f"[{bungeecord_dir.lower()}]\nserver_name = {server_name}\nversion = lastSuccessfulBuild\nstart_jar = BungeeCord.jar\nabsolute_path = {absolute_path}/{bungeecord_dir}\nmake_user = {getpass.getuser()}\n")
+        f = open("./data/unsetting.ini", 'a')
+        f.write("")
+        f.close()
+    except:
+        return 2, ""
+    return 0, bungeecord_dir.lower().replace("minecraft/", "")
+
+def install_spigot_server(minecraft_dir, server_version):
     result = None
     if download_file("https://hub.spigotmc.org/jenkins/job/BuildTools/lastSuccessfulBuild/artifact/target/BuildTools.jar", minecraft_dir+"/Spigot-BuildTools.jar") == False:
         return 1
@@ -98,7 +169,7 @@ def make(server_name : str, server_port : int , server_version : str, edition : 
                 return 3, ""
             start_jar = "server.jar"
         case 'spigot':
-            match spigot_download(minecraft_dir, server_version):
+            match install_spigot_server(minecraft_dir, server_version):
                 case 0:
                     pass
                 case 1:
@@ -106,6 +177,21 @@ def make(server_name : str, server_port : int , server_version : str, edition : 
                 case 2:
                     return 4, ""
             start_jar = f"spigot-{server_version}.jar"
+        case 'forge':
+            match install_forge_server(minecraft_dir, server_version, forge_id):
+                case 0:
+                    pass
+                case 1:
+                    return 3, ""
+                case 2:
+                    return 5, ""
+            start_jar = "forge-"+server_version+"-"+forge_id+".jar"
+            if not os.path.isfile(f"{minecraft_dir}/{start_jar}"):
+                start_jar = start_jar.replace('.jar', '')+"-universal.jar"
+                if not os.path.isfile(f"{minecraft_dir}/{start_jar}"):
+                    start_jar = start_jar.replace('-universal.jar', '')+f"-{server_version}-universal.jar"
+                    if not os.path.isfile(f"{minecraft_dir}/{start_jar}"):
+                        return 5, ""
         case 'forge':
             match install_forge_server(minecraft_dir, server_version, forge_id):
                 case 0:
@@ -132,7 +218,7 @@ def make(server_name : str, server_port : int , server_version : str, edition : 
         with open(minecraft_dir+"/eula.txt", mode='a') as f:
             f.write("#By changing the setting below to TRUE you are indicating your agreement to our EULA (https://account.mojang.com/documents/minecraft_eula).\n#"+dt_now_utc.strftime('%a')+" "+dt_now_utc.strftime('%b')+" "+dt_now_utc.strftime('%d')+" "+dt_now_utc.strftime('%H:%M:%S')+" "+str(dt_now_utc.tzinfo)+" "+dt_now_utc.strftime('%Y')+"\neula="+str(eula))
         with open("./data/setting.ini", mode='a') as f:
-            f.write(f"[{minecraft_dir.lower()}]\nserver_name = {server_name}\nversion = {server_version}\nstart_jar = {start_jar}\nabsolute_path = {absolute_path}/{minecraft_dir}\nmake_user = {getpass.getuser()}")
+            f.write(f"[{minecraft_dir.lower()}]\nserver_name = {server_name}\nversion = {server_version}\nstart_jar = {start_jar}\nabsolute_path = {absolute_path}/{minecraft_dir}\nmake_user = {getpass.getuser()}\n")
         f = open("./data/unsetting.ini", 'a')
         f.write("")
         f.close()

@@ -62,11 +62,14 @@ def make():
 def main(args : list):
     if len(args) == 1:
         args_list_message = """
-        Autoer -[s,m,r,cp,sl] [etc_args] -path [path]
+        Autoer -[s,m,bs,bm,R,r,cp,sl,sysdm,sysdr,se] [etc_args]
         引数欄:
             起動モード:
                 -s,-m : 作成
                 (方法 : -m [server_name(スペース, タブなし)] [server_port(1~65535)] [server_version] [eula(true or false)] [server_edition(vanilla, spigot, forge)] [forge_build_id(Forge使用時のみ)])
+
+                -bs,-bm : Bungeecordの作成
+                (方法 : -bm [server_name(スペース, タブなし)] [server_port(1~65535)])
                 
                 -R : 削除
                 (方法 : -R [server_id (サーバー作成時に発行されたID(-S(サーバーリスト表示)でIDを確認することができます))])
@@ -85,6 +88,9 @@ def main(args : list):
 
                 -sysdr サーバーのSystemd Deamon,スタートアップを削除する(自動起動設定)(※管理者権限が必須です)
                 (方法 : -sysdr [server_id (サーバー作成時に発行されたID(-S(サーバーリスト表示)でIDを確認することができます))])
+
+                -se サーバー管理ファイルの編集モード(Minecraftでserver.propeties, Bungeecordでconfig.yml)
+                (方法 : -se [server_id (サーバー作成時に発行されたID(-S(サーバーリスト表示)でIDを確認することができます))] [editer(Windows以外)])
         """
         print(args_list_message)
     for i in range(5):
@@ -134,6 +140,51 @@ def main(args : list):
             else:
                 print(f"サーバーの作成に成功しました\n作成したサーバーID : {result[1]}")
                 return 0
+        if args[1] == "-bm" or args[1] == "-bs":
+            result = ""
+            if len(args) - 2 >= 2:
+                if not str(args[3]).isdigit():
+                    print("入力フォーマットが間違っています")
+                    return 7
+                max_port = 6000
+                sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+                return_code = sock.connect_ex(("127.0.0.1", int(args[3])))
+                sock.close()
+                if return_code == 0:
+                    print("警告 : このポートは使用されています")
+                result = MakeServer.install_bungeecord_server(str(args[2]), int(str(args[3])))
+                if result[0] != 0:
+                    error_text = ""
+                    match result[0]:
+                        case 1:
+                            error_text = "サーバーファイルのダウンロードに失敗しました"
+                        case 2:
+                            error_text = "ファイルの書き込み中にエラーが発生しました"
+                    print(f"サーバーの作成に失敗しました\n{error_text}")
+                    return result[0]
+                else:
+                    print(f"サーバーの作成に成功しました\n作成したサーバーID : {result[1]}")
+                    return 0
+        if args[1] == "-se":
+            result = ""
+            editer = ""
+            if len(args) - 2 >= 1:
+                if len(args) - 2 >= 2:
+                    editer = str(args[3])
+                result = ControlServer.edit_server(str(args[2]), editer)
+                if result != 0:
+                    error_text = ""
+                    match result:
+                        case 1:
+                            error_text = "サーバーが見つかりませんでした"
+                        case 2:
+                            error_text = "ファイルの書き込みに失敗しました"
+                    print(f"サーバーファイルの編集に失敗しました\n{error_text}")
+                    return result
+                else:
+                    print(f"サーバーファイルの編集が終了しました")
+                    return 0
+
         if args[1] == "-R":
             result = ControlServer.del_server(str(args[2]))
             if result != 0:
@@ -179,7 +230,7 @@ def main(args : list):
                 else:
                     print("ポートの変更に成功しました")
                     return 0
-        if args[1] == "-sysdm":
+        if args[1] == "-sysdm" or args[1] == "-sysds":
             result = ""
             systemd_mode = 0
             if len(args) >= 5:
