@@ -91,7 +91,12 @@ def start_server(server_id, xms = 1, xmx = 1):
         pass
     return 0
 
-def add_startup(server_id, xms = 1, xmx = 1, systemd_mode = 0):
+def add_startup(server_id, start_autoer_program, xms = 1, xmx = 1, systemd_mode = 0):
+    absolute_path = os.getcwd().replace("\\", "/")
+    if "Autoer.py" in  start_autoer_program:
+        start_command = f"python -u {start_autoer_program} -r {server_id} {xms} {xmx}"
+    else:
+        start_command = f"{start_autoer_program} -r {server_id} {xms} {xmx}"
     identification_server = None
     if etc.is_admin() == False:
         return 3
@@ -111,24 +116,24 @@ def add_startup(server_id, xms = 1, xmx = 1, systemd_mode = 0):
     try:
         if user_use_platfrom == "Windows":
             file = open(f"C:/ProgramData/Microsoft/Windows/Start Menu/Programs/StartUp/{server_id}.bat", mode='w')
-            file.write(f"cd {path}\n\
-                        java -Xms{xms}G -Xmx{xmx}G -jar {result[2][i][3]} nogui \n\
+            file.write(f"cd {absolute_path}\n\
+                        {start_command}\n\
                         pause")
             file.close()
         else:
             if not shutil.which('systemctl'):
                 return 6
-            exec_start = f"/usr/bin/java -Xms{xms}G -Xmx{xmx}G -jar {result[2][i][3]} nogui"
+            exec_start = f"/usr/bin/env {start_command}"
             if systemd_mode == 1:
                 if not shutil.which('screen'):
                     return 6
-                exec_start = f"/usr/bin/screen -DmS server_id /usr/bin/java -Xms{xms}G -Xmx{xmx}G -jar {result[2][i][3]} nogui"
+                exec_start = f"/usr/bin/screen -DmS {server_id} /usr/bin/env {start_command.replace('python', 'python3')}"
             file = open(f"/etc/systemd/system/{server_id}.service", mode='w')
             file.write(f"[Unit] \
             \nDescription=Minecraft Server: %i \
             \nAfter=network.target \
             \n[Service] \
-            \nWorkingDirectory={path} \
+            \nWorkingDirectory={absolute_path} \
             \nUser={result[2][int(str(identification_server))][5]}\
             \nRestart=always \
             \nExecStart={exec_start}\

@@ -240,7 +240,7 @@ def main(args : list):
                 if len(args) >= 6:
                     if args[5] == "-screen":
                         systemd_mode = 1
-                result = ControlServer.add_startup(args[2], int(args[3]), int(args[4]), systemd_mode)
+                result = ControlServer.add_startup(args[2], args[0], int(args[3]), int(args[4]), systemd_mode)
                 if result != 0:
                     error_text = ""
                     match result:
@@ -273,7 +273,7 @@ def main(args : list):
                     error_text = ""
                     match result:
                         case 1:
-                            error_text = "サーバーの管理ファイルが存在しません\n※ディレクトリはのターゲットは作成時と同じである必要があります\n※ディレクトリを指定したい場合は-pathをつけて実行してください"
+                            error_text = "サーバーの管理ファイルが存在しません\n※ディレクトリはのターゲットは作成時と同じである必要があります"
                         case 2:
                             error_text = "サーバーの管理ファイルの中身が空です\n※ディレクトリはのターゲットは作成時と同じである必要があります"
                         case 3:
