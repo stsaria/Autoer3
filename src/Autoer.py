@@ -66,7 +66,7 @@ def main(args : list):
         引数欄:
             起動モード:
                 -s,-m : 作成
-                (方法 : -m [server_name(スペース, タブなし)] [server_port(1~65535)] [server_version] [eula(true or false)] [server_edition(vanilla, spigot, forge)] [forge_build_id(Forge使用時のみ)])
+                (方法 : -m [server_name(スペース, タブなし)] [server_port(1~65535)] [server_version] [eula(true or false)] [server_edition(vanilla, spigot, forge, paper)] [build_id(Forge, PaperMC使用時のみ)])
 
                 -bs,-bm : Bungeecordの作成
                 (方法 : -bm [server_name(スペース, タブなし)] [server_port(1~65535)])
@@ -103,9 +103,9 @@ def main(args : list):
         if args[1] == "-s" or args[1] == "-m":
             result = ""
             if len(args) - 2 >= 5:
-                forge_id = ""
+                build_id = ""
                 if len(args) - 2 >= 6:
-                    forge_id = args[7]
+                    build_id = args[7]
                 if not str(args[3]).isdigit():
                     print("入力フォーマットが間違っています")
                     return 7
@@ -116,7 +116,7 @@ def main(args : list):
                 if return_code == 0:
                     print("警告 : このポートは使用されています")
                 try:
-                    result = MakeServer.make(str(args[2]), int(str(args[3])), str(args[4]), str(args[6]), True, true_false_string(str(args[5])), str(forge_id))
+                    result = MakeServer.make(str(args[2]), int(str(args[3])), str(args[4]), str(args[6]), True, true_false_string(str(args[5])), str(build_id))
                 except InterruptedError:
                     print("入力フォーマットが間違っています")
                     return 7

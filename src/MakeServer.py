@@ -44,7 +44,7 @@ lobby:
     restricted: false
 listeners:
 - query_port: {str(server_port)}
-motd: '&1Another Bungee server'
+motd: '{str(server_name)}'
 tab_list: GLOBAL_PING
 query_enabled: false
 proxy_protocol: false
@@ -145,7 +145,7 @@ def file_identification_rewriting(file_name, before, after):
     replace_setA = (before, after)
     replace_func(file_name, replace_setA)
 
-def make(server_name : str, server_port : int , server_version : str, edition : str, message : bool, eula : bool, forge_id = ""):
+def make(server_name : str, server_port : int , server_version : str, edition : str, message : bool, eula : bool, build_id = ""):
     start_jar = None
     
     dt_now        = datetime.datetime.now()
@@ -178,14 +178,14 @@ def make(server_name : str, server_port : int , server_version : str, edition : 
                     return 4, ""
             start_jar = f"spigot-{server_version}.jar"
         case 'forge':
-            match install_forge_server(minecraft_dir, server_version, forge_id):
+            match install_forge_server(minecraft_dir, server_version, build_id):
                 case 0:
                     pass
                 case 1:
                     return 3, ""
                 case 2:
                     return 5, ""
-            start_jar = "forge-"+server_version+"-"+forge_id+".jar"
+            start_jar = "forge-"+server_version+"-"+build_id+".jar"
             if not os.path.isfile(f"{minecraft_dir}/{start_jar}"):
                 start_jar = start_jar.replace('.jar', '')+"-universal.jar"
                 if not os.path.isfile(f"{minecraft_dir}/{start_jar}"):
@@ -193,20 +193,24 @@ def make(server_name : str, server_port : int , server_version : str, edition : 
                     if not os.path.isfile(f"{minecraft_dir}/{start_jar}"):
                         return 5, ""
         case 'forge':
-            match install_forge_server(minecraft_dir, server_version, forge_id):
+            match install_forge_server(minecraft_dir, server_version, build_id):
                 case 0:
                     pass
                 case 1:
                     return 3, ""
                 case 2:
                     return 5, ""
-            start_jar = "forge-"+server_version+"-"+forge_id+".jar"
+            start_jar = "forge-"+server_version+"-"+build_id+".jar"
             if not os.path.isfile(f"{minecraft_dir}/{start_jar}"):
                 start_jar = start_jar.replace('.jar', '')+"-universal.jar"
                 if not os.path.isfile(f"{minecraft_dir}/{start_jar}"):
                     start_jar = start_jar.replace('-universal.jar', '')+f"-{server_version}-universal.jar"
                     if not os.path.isfile(f"{minecraft_dir}/{start_jar}"):
                         return 5, ""
+        case 'paper':
+            if download_file(f"https://api.papermc.io/v2/projects/paper/versions/{server_version}/builds/{build_id}/downloads/paper-{server_version}-{build_id}.jar", minecraft_dir+f"/paper-{server_version}-{build_id}.jar", user_agent="") == False:
+                return 3, ""
+            start_jar = f"paper-{server_version}-{build_id}.jar"
         case _:
             return 2, ""
     
