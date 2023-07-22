@@ -62,7 +62,7 @@ def make():
 def main(args : list):
     if len(args) == 1:
         args_list_message = """
-        Autoer -[s,m,bs,bm,R,r,cp,sl,sysdm,sysdr,se] [etc_args]
+        Autoer -[s,m,bs,bm,R,r,cp,sl,sysdm,sysdr,se,trans] [etc_args]
         引数欄:
             起動モード:
                 -s,-m : 作成
@@ -72,25 +72,30 @@ def main(args : list):
                 (方法 : -bm [server_name(スペース, タブなし)] [server_port(1~65535)])
                 
                 -R : 削除
-                (方法 : -R [server_id (サーバー作成時に発行されたID(-S(サーバーリスト表示)でIDを確認することができます))])
+                (方法 : -R [server_id])
 
                 -r : 起動
-                (方法 : -r [server_id (サーバー作成時に発行されたID(-S(サーバーリスト表示)でIDを確認することができます))] [Xms(int)(最小メモリ)] [Xmx(int)(最大メモリ)])
+                (方法 : -r [server_id] [Xms(int)(最小メモリ)] [Xmx(int)(最大メモリ)])
 
                 -sl : サーバーリストの表示
                 (方法 : -sl)
                 
                 -cp : サーバーのポート変更
-                (方法 : -c [server_id (サーバー作成時に発行されたID(-S(サーバーリスト表示)でIDを確認することができます))] [server_new_port(1~65535)])
+                (方法 : -c [server_id] [server_new_port(1~65535)])
 
                 -sysdm,-sysds サーバーをSystemd Deamon,スタートアップに登録する(自動起動設定)(※管理者権限が必須です)
-                (方法 : -sysdm [server_id (サーバー作成時に発行されたID(-S(サーバーリスト表示)でIDを確認することができます))] [Xms(int)(最小メモリ)] [Xmx(int)(最大メモリ)])
+                (方法 : -sysdm [server_id] [Xms(int)(最小メモリ)] [Xmx(int)(最大メモリ)] -screen (Screenでの起動(Windows以外)))
 
                 -sysdr サーバーのSystemd Deamon,スタートアップを削除する(自動起動設定)(※管理者権限が必須です)
-                (方法 : -sysdr [server_id (サーバー作成時に発行されたID(-S(サーバーリスト表示)でIDを確認することができます))])
+                (方法 : -sysdr [server_id])
 
-                -se サーバー管理ファイルの編集モード(Minecraftでserver.propeties, Bungeecordでconfig.yml)
-                (方法 : -se [server_id (サーバー作成時に発行されたID(-S(サーバーリスト表示)でIDを確認することができます))] [editer(Windows以外)])
+                -se サーバー管理ファイルの編集モード(Minecraftでserver.propeties、Bungeecordでconfig.yml)
+                (方法 : -se [server_id] [editer(Windows以外)])
+                
+                -trans サーバーの情報を移行するモード(Minecraftでworld, world_nether, world_the_end, server.properties, spigot.yml(Spigot, Paperのみ)、Bungeecordでconfig.yml)
+                (方法 : -trans [before_server_id (移行元のサーバー)] [after_server_id (移行先のサーバー)] -minimum (必要最低限のファイル))
+
+                ※server_id は サーバー作成時に発行されたID(-sl(サーバーリスト表示)でIDを確認することができます
         """
         print(args_list_message)
     for i in range(5):
@@ -201,7 +206,7 @@ def main(args : list):
                 print(f"サーバーの削除に失敗しました\n{error_text}")
                 return result
             else:
-                print("サーバーの削除に成功しました")
+                print("サーバーの削除に成功しました\n※自動起動設定に関しては削除していません")
                 return 0
         if args[1] == "-cp":
             result = ""
@@ -328,6 +333,29 @@ def main(args : list):
                     return result
                 else:
                     print("マイクラサーバーが正常終了しました")
+                    return 0
+        if args[1] == "-trans":
+            if len(args) >= 4:
+                mode = 0
+                if len(args) >= 5:
+                    if args[4] == "-minimum":
+                        mode = 1
+                result = ControlServer.transfer_server([args[2], args[3]], mode)
+                if result != 0:
+                    error_text = ""
+                    match result:
+                        case 1:
+                            error_text = "サーバーの管理ファイルが存在しません\n※ディレクトリはのターゲットは作成時と同じである必要があります\n※ディレクトリを指定したい場合は-pathをつけて実行してください"
+                        case 2:
+                            error_text = "サーバーの管理ファイルの中身が空です\n※ディレクトリはのターゲットは作成時と同じである必要があります"
+                        case 3:
+                            error_text = "指定したサーバーがありません"
+                        case 4:
+                            error_text = "ファイルコピー中にエラーが発生しました"
+                    print("ファイルコピーに失敗しました\n"+error_text)
+                    return result
+                else:
+                    print("ファイルコピーに成功しました")
                     return 0
 
 if __name__ == "__main__":
