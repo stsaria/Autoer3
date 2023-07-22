@@ -66,25 +66,25 @@ def main(args : list):
         引数欄:
             起動モード:
                 -s,-m : 作成
-                (方法 : -m [server_name(スペース, タブなし)] [server_port(1~65535)] [server_version] [eula(true or false)] [server_edition(vanilla, spigot, forge, paper)] [build_id(Forge, PaperMC使用時のみ)])
+                (方法 : -m [server_name (スペース, タブなし)] [server_port (1~65535)] [server_version] [eula (true or false)] [server_edition (vanilla, spigot, forge, paper)] [build_id (Forge, PaperMC使用時のみ)])
 
                 -bs,-bm : Bungeecordの作成
-                (方法 : -bm [server_name(スペース, タブなし)] [server_port(1~65535)])
+                (方法 : -bm [server_name (スペース, タブなし)] [server_port (1~65535)])
                 
                 -R : 削除
                 (方法 : -R [server_id])
 
                 -r : 起動
-                (方法 : -r [server_id] [Xms(int)(最小メモリ)] [Xmx(int)(最大メモリ)])
+                (方法 : -r [server_id] [Xms (int)(最小メモリ)] [Xmx (int)(最大メモリ)])
 
                 -sl : サーバーリストの表示
                 (方法 : -sl)
                 
                 -cp : サーバーのポート変更
-                (方法 : -c [server_id] [server_new_port(1~65535)])
+                (方法 : -cp [server_id] [server_new_port (1~65535)])
 
                 -sysdm,-sysds サーバーをSystemd Deamon,スタートアップに登録する(自動起動設定)(※管理者権限が必須です)
-                (方法 : -sysdm [server_id] [Xms(int)(最小メモリ)] [Xmx(int)(最大メモリ)] -screen (Screenでの起動(Windows以外)))
+                (方法 : -sysdm [server_id] [Xms (int)(最小メモリ)] [Xmx (int)(最大メモリ)] -screen (Screenでの起動(Windows以外)))
 
                 -sysdr サーバーのSystemd Deamon,スタートアップを削除する(自動起動設定)(※管理者権限が必須です)
                 (方法 : -sysdr [server_id])
