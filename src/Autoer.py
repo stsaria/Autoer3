@@ -1,6 +1,12 @@
-import MakeServer, ControlServer, platform, requests, socket, sys
+import MakeServer, ControlServer, platform, requests, socket, signal, sys
 from TextJudgement import true_false_string
 from Javasystem import check
+
+class TerminatedExecption(Exception):
+    pass
+
+def raise_exception(*_):
+    raise TerminatedExecption()
 
 def get_http_status_code(url : str):
     r = requests.get(url)
@@ -28,7 +34,7 @@ def select_number(text : str, choices : list, return_text = []):
 def main(args : list):
     if len(args) == 1:
         args_list_message = """
-        Autoer -[s,m,bs,bm,R,r,cp,sl,sysdm,sysdr,se,trans] [etc_args]
+        Autoer -[s,m,bs,bm,R,r,cp,sl,sysdm,sysdr,se,trans,legacy-trans] [etc_args]
         引数欄:
             起動モード:
                 -s,-m : 作成
@@ -61,6 +67,9 @@ def main(args : list):
                 -trans サーバーの情報を移行するモード(Minecraftでworld, world_nether, world_the_end, server.properties, spigot.yml(Spigot, Paperのみ)、Bungeecordでconfig.yml)
                 (方法 : -trans [before_server_id (移行元のサーバー)] [after_server_id (移行先のサーバー)] -minimum (必要最低限のファイル))
 
+                -unsupported-trans Autoerではないサーバーを-transのように移行できるモード
+                (方法 : -unsupported-trans [before_server_id_or_dir (移行元のサーバー)] [after_server_or_id (移行先のサーバー)] -minimum (必要最低限のファイル))
+
                 ※server_id は サーバー作成時に発行されたID(-sl(サーバーリスト表示)でIDを確認することができます
         """
         print(args_list_message)
@@ -70,7 +79,6 @@ def main(args : list):
             return 7
 
         if args[1] == "-s" or args[1] == "-m":
-            result = ""
             if len(args) - 2 >= 5:
                 build_id = ""
                 if len(args) - 2 >= 6:
@@ -78,7 +86,6 @@ def main(args : list):
                 if not str(args[3]).isdigit():
                     print("入力フォーマットが間違っています")
                     return 7
-                max_port = 6000
                 sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
                 return_code = sock.connect_ex(("127.0.0.1", int(args[3])))
                 sock.close()
@@ -99,6 +106,7 @@ def main(args : list):
                     case 3:
                         error_text = "サーバーファイルのダウンロードに失敗しました"
                     case 4:
+             
                         error_text = "BuildToolsの実行時にエラーが発生しました"
                     case 5:
                         error_text = "Forgeインストール時にエラーが発生しました"
@@ -110,12 +118,10 @@ def main(args : list):
                 print(f"サーバーの作成に成功しました\n作成したサーバーID : {result[1]}")
                 return 0
         if args[1] == "-bm" or args[1] == "-bs":
-            result = ""
             if len(args) - 2 >= 2:
                 if not str(args[3]).isdigit():
                     print("入力フォーマットが間違っています")
                     return 7
-                max_port = 6000
                 sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
                 return_code = sock.connect_ex(("127.0.0.1", int(args[3])))
                 sock.close()
@@ -135,7 +141,6 @@ def main(args : list):
                     print(f"サーバーの作成に成功しました\n作成したサーバーID : {result[1]}")
                     return 0
         if args[1] == "-se":
-            result = ""
             editer = ""
             if len(args) - 2 >= 1:
                 if len(args) - 2 >= 2:
@@ -173,7 +178,6 @@ def main(args : list):
                 print("サーバーの削除に成功しました\n※自動起動設定に関しては削除していません")
                 return 0
         if args[1] == "-cp":
-            result = ""
             if len(args) >= 4:
                 if not str(args[3]).isdigit():
                     print("入力フォーマットが間違っています")
@@ -183,7 +187,7 @@ def main(args : list):
                     error_text = ""
                     match result:
                         case 1:
-                            error_text = "サーバーの管理ファイルが存在しません\n※ディレクトリはのターゲットは作成時と同じである必要があります\n※ディレクトリを指定したい場合は-pathをつけて実行してください"
+                            error_text = "サーバーの管理ファイルが存在しません\n※ディレクトリはのターゲットは作成時と同じである必要があります"
                         case 2:
                             error_text = "サーバーの管理ファイルの中身が空です\n※ディレクトリはのターゲットは作成時と同じである必要があります"
                         case 3:
@@ -200,7 +204,6 @@ def main(args : list):
                     print("ポートの変更に成功しました")
                     return 0
         if args[1] == "-sysdm" or args[1] == "-sysds":
-            result = ""
             systemd_mode = 0
             if len(args) >= 5:
                 if not str(args[3]).isdigit() or not str(args[4]).isdigit():
@@ -214,7 +217,7 @@ def main(args : list):
                     error_text = ""
                     match result:
                         case 1:
-                            error_text = "サーバーの管理ファイルが存在しません\n※ディレクトリはのターゲットは作成時と同じである必要があります\n※ディレクトリを指定したい場合は-pathをつけて実行してください"
+                            error_text = "サーバーの管理ファイルが存在しません\n※ディレクトリはのターゲットは作成時と同じである必要があります"
                         case 2:
                             error_text = "サーバーの管理ファイルの中身が空です\n※ディレクトリはのターゲットは作成時と同じである必要があります"
                         case 3:
@@ -235,7 +238,6 @@ def main(args : list):
                             print(f"マイクラのコンソールを表示するときは以下のコマンドをお使いください\nscreen -r {args[2]}\n終了する際はCtrl+A+Dです")
                     return 0
         if args[1] == "-sysdr":
-            result = ""
             if len(args) >= 3:
                 result = ControlServer.del_startup(args[2])
                 if result != 0:
@@ -273,7 +275,6 @@ def main(args : list):
                 for i in result[2]:
                     print(f"サーバーID : {i[0]}", f"サーバー名 : {i[1].replace('minecraft/', '')}", f"サーバーバージョン : {i[2]}")
         if args[1] == "-r":
-            result = ""
             if len(args) >= 5:
                 if not str(args[3]).isdigit() or not str(args[4]).isdigit():
                     print("入力フォーマットが間違っています")
@@ -283,7 +284,7 @@ def main(args : list):
                     error_text = ""
                     match result:
                         case 1:
-                            error_text = "サーバーの管理ファイルが存在しません\n※ディレクトリはのターゲットは作成時と同じである必要があります\n※ディレクトリを指定したい場合は-pathをつけて実行してください"
+                            error_text = "サーバーの管理ファイルが存在しません\n※ディレクトリはのターゲットは作成時と同じである必要があります"
                         case 2:
                             error_text = "サーバーの管理ファイルの中身が空です\n※ディレクトリはのターゲットは作成時と同じである必要があります"
                         case 3:
@@ -297,18 +298,21 @@ def main(args : list):
                 else:
                     print("マイクラサーバーが正常終了しました")
                     return 0
-        if args[1] == "-trans":
+        if args[1] == "-trans"or args[1] == "-unsupported-trans":
             if len(args) >= 4:
-                mode = 0
+                is_minimum = False
                 if len(args) >= 5:
                     if args[4] == "-minimum":
-                        mode = 1
-                result = ControlServer.transfer_server([args[2], args[3]], mode)
+                        is_minimum = True
+                if args[1] == "-trans":
+                    result = ControlServer.transfer_server([args[2], args[3]], is_minimum, False)
+                elif args[1] == "-unsupported-trans":
+                    result = ControlServer.transfer_server([args[2], args[3]], is_minimum, True)
                 if result != 0:
                     error_text = ""
                     match result:
                         case 1:
-                            error_text = "サーバーの管理ファイルが存在しません\n※ディレクトリはのターゲットは作成時と同じである必要があります\n※ディレクトリを指定したい場合は-pathをつけて実行してください"
+                            error_text = "サーバーの管理ファイルが存在しません\n※ディレクトリはのターゲットは作成時と同じである必要があります"
                         case 2:
                             error_text = "サーバーの管理ファイルの中身が空です\n※ディレクトリはのターゲットは作成時と同じである必要があります"
                         case 3:
@@ -322,4 +326,8 @@ def main(args : list):
                     return 0
 
 if __name__ == "__main__":
-    main(sys.argv)
+    signal.signal(signal.SIGTERM, raise_exception)
+    try:
+        sys.exit(main(sys.argv))
+    except TerminatedExecption:
+        sys.exit(0)

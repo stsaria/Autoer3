@@ -1,4 +1,4 @@
-import configparser, subprocess, platform, shutil,  os, etc
+import configparser, subprocess, platform, shutil, os, etc
 
 def replace_func(fname, replace_set):
     target, replace = replace_set
@@ -19,8 +19,9 @@ def file_identification_rewriting(file_name, before, after):
 
 def server_list():
     servers = []
+    server_id = []
     if not os.path.isfile("./data/setting.ini") or not os.path.isfile("./data/unsetting.ini"):
-        return 1, "server_id", servers
+        return 1, server_id, servers
     ini = configparser.ConfigParser()
     ini.read('./data/setting.ini', 'UTF-8')
     unini = configparser.ConfigParser()
@@ -139,7 +140,7 @@ def add_startup(server_id, start_autoer_program, xms = 1, xmx = 1, systemd_mode 
             \nWantedBy=multi-user.target")
             file.close()
             subprocess.run("systemctl daemon-reload", shell=True, check=True)
-            subprocess.run(f"systemctl enable /etc/systemd/system/{server_id}.service", shell=True, check=True)
+            subprocess.run(f"systemctl enable {server_id}.service", shell=True, check=True)
     except:
         return 6
     return 0
@@ -220,36 +221,31 @@ def change_port(server_id : str, port : int):
         return 5
     return 0
     
-def transfer_server(server_id : list, mode : int):
+def transfer_server(servers : list, is_minimum : bool, is_unsupported : bool):
     identification_server = [None, None]
     path = [None, None]
-    required_copy_dir_and_file = ["world", "world_nether", "world_the_end", "server.properties"]
+    required_copy_dir_and_file = ["world", "world_nether", "world_the_end", "server.properties", "banned-players.json", "banned-ips.json", "whitelist.json", "ops.json", "eula.txt"]
     optional_copy_dir_and_file = ["spigot.yml", "plugins", "mods"]
     result = server_list()
-    for i in range(len(server_id)):
+    for i in range(len(servers)):
         if result[0] != 0:
             return result[0]
         for j in range(len(result[2])):
-            if server_id[i] == result[2][j][0]:
+            if servers[i] == result[2][j][0]:
                 identification_server[i] = j
         if identification_server[i] == None:
-            return 3
+            if is_unsupported == True:
+                if os.path.isdir(servers[i]):
+                    path[i] = servers[i]
+                else:
+                    return 3
+            else:
+                return 3
         else:
             path[i] = result[2][int(str(identification_server[i]))][4]
-    #try:
-    if "minecraft" in server_id[0] and "minecraft" in server_id[1]:
-        for i in required_copy_dir_and_file:
-            if os.path.isfile(f"{path[0]}/{i}"):
-                shutil.copy2(f"{path[0]}/{i}", path[1])
-            elif os.path.isdir(f"{path[0]}/{i}"):
-                if os.path.isdir(f"{path[1]}/{i}"):
-                    shutil.rmtree(f"{path[1]}/{i}")
-                shutil.copytree(f"{path[0]}/{i}", f"{path[1]}/{i}")
-            else:
-                continue
-            print(f"{path[0]}/{i} -> {path[1]}/{i}")
-        if mode == 0:
-            for i in optional_copy_dir_and_file:
+    try:
+        if "minecraft" in servers[0] and "minecraft" in servers[1]:
+            for i in required_copy_dir_and_file:
                 if os.path.isfile(f"{path[0]}/{i}"):
                     shutil.copy2(f"{path[0]}/{i}", path[1])
                 elif os.path.isdir(f"{path[0]}/{i}"):
@@ -259,14 +255,20 @@ def transfer_server(server_id : list, mode : int):
                 else:
                     continue
                 print(f"{path[0]}/{i} -> {path[1]}/{i}")
-    elif "bungeecord" in server_id[0] and "bungeecord" in server_id[1]:
-        if os.path.isfile(f"{path[0]}/config.yml"):
-            shutil.copy2(f"{path[0]}/config.yml", path[1])
-    #except Exception as e:
-    #    print(e)
-    #    return 4
+            if is_minimum != True:
+                for i in optional_copy_dir_and_file:
+                    if os.path.isfile(f"{path[0]}/{i}"):
+                        shutil.copy2(f"{path[0]}/{i}", path[1])
+                    elif os.path.isdir(f"{path[0]}/{i}"):
+                        if os.path.isdir(f"{path[1]}/{i}"):
+                            shutil.rmtree(f"{path[1]}/{i}")
+                        shutil.copytree(f"{path[0]}/{i}", f"{path[1]}/{i}")
+                    else:
+                        continue
+                    print(f"{path[0]}/{i} -> {path[1]}/{i}")
+        elif "bungeecord" in servers[0] and "bungeecord" in servers[1]:
+            if os.path.isfile(f"{path[0]}/config.yml"):
+                shutil.copy2(f"{path[0]}/config.yml", path[1])
+    except Exception as e:
+        return 4
     return 0
-
-
-
-
