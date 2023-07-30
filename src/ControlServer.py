@@ -225,7 +225,7 @@ def transfer_server(servers : list, is_minimum : bool, is_unsupported : bool):
     identification_server = [None, None]
     path = [None, None]
     required_copy_dir_and_file = ["world", "world_nether", "world_the_end", "server.properties", "banned-players.json", "banned-ips.json", "whitelist.json", "ops.json", "eula.txt"]
-    optional_copy_dir_and_file = ["spigot.yml", "plugins", "mods"]
+    optional_copy_dir_and_file = ["server-icon.png", "spigot.yml", "plugins", "mods"]
     result = server_list()
     for i in range(len(servers)):
         if result[0] != 0:
