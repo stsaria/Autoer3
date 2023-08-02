@@ -38,7 +38,10 @@ def main(args : list):
         引数欄:
             起動モード:
                 -s,-m : 作成
-                (方法 : -m [server_name (スペース, タブなし)] [server_port (1~65535)] [server_version] [eula (true or false)] [server_edition (vanilla, spigot, forge, paper)] [build_id (Forge, PaperMC使用時のみ)])
+                (方法 : -m [server_name (スペース, タブなし)] [server_port (1~65535)] [server_version (プレリリース版でも可※)] [eula (true or false)] [server_edition (vanilla, spigot, forge, paper)] [build_id (Forge※, PaperMC※ 使用時のみ)])
+                ※プレリリース版はForge, PaperMCとの組み合わせでは使えません
+                ※ForgeはBuildIDの取得ができません
+                ※PaperMCはBuildIDを省略すれば自動的に新しいjarファイルがダウンロードされます
 
                 -bs,-bm : Bungeecordの作成
                 (方法 : -bm [server_name (スペース, タブなし)] [server_port (1~65535)])
@@ -106,7 +109,6 @@ def main(args : list):
                     case 3:
                         error_text = "サーバーファイルのダウンロードに失敗しました"
                     case 4:
-             
                         error_text = "BuildToolsの実行時にエラーが発生しました"
                     case 5:
                         error_text = "Forgeインストール時にエラーが発生しました"

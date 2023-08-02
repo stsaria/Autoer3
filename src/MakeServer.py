@@ -114,6 +114,8 @@ def install_forge_server(minecraft_dir, server_version, forge_id):
     return result
 
 def get_minecraft_url(version):
+    if download_file("http://mcversions.net/mcversions.json", "data/version.json") == False:
+        return 1, ""
     file = open('data/version.json', 'r')
     json_object = json.load(file)
     minecraft_editions = ["stable", "snapshot"]
@@ -125,8 +127,8 @@ def get_minecraft_url(version):
         except KeyError:
             successs.append(False)
     if not successs[0] and not successs[1]:
-        return False, "not"
-    return True, minecraft_server_url
+        return 2, "not"
+    return 0, minecraft_server_url
 
 def replace_func(fname, replace_set):
     target, replace = replace_set
@@ -145,6 +147,13 @@ def file_identification_rewriting(file_name, before, after):
     replace_setA = (before, after)
     replace_func(file_name, replace_setA)
 
+def get_papermc_latest_build_id(version):
+    if download_file(f"https://api.papermc.io/v2/projects/paper/versions/{version}", f"data/papermc-api-{version}.json") == False:
+        return 1, ""
+    file = open(f'data/papermc-api-{version}.json', 'r')
+    json_object = json.load(file)
+    return 0, json_object["builds"][len(list(json_object["builds"])) - 1]
+
 def make(server_name : str, server_port : int , server_version : str, edition : str, message : bool, eula : bool, build_id = ""):
     start_jar = None
     
@@ -158,11 +167,13 @@ def make(server_name : str, server_port : int , server_version : str, edition : 
 
     if message == True:
         print("しばらくお待ち下さい。\n回線の状況によっては時間が長くなる可能性もあります。")
-    if download_file("http://mcversions.net/mcversions.json", "data/version.json") == False:
-        return 3, ""
-    isversion, server_url = get_minecraft_url(server_version)
-    if not isversion:
-        return 2, ""
+    result, server_url = get_minecraft_url(server_version)
+    if result != 0:
+        print("a")
+        if result == 1:
+            return 3, ""
+        elif result == 2:
+            return 2, ""
     match edition:
         case 'vanilla':
             if download_file(server_url, minecraft_dir+"/server.jar", user_agent="") == False:
@@ -208,6 +219,10 @@ def make(server_name : str, server_port : int , server_version : str, edition : 
                     if not os.path.isfile(f"{minecraft_dir}/{start_jar}"):
                         return 5, ""
         case 'paper':
+            if not build_id.isdigit():
+                result, build_id = get_papermc_latest_build_id(server_version)
+                if result != 0:
+                    return 3
             if download_file(f"https://api.papermc.io/v2/projects/paper/versions/{server_version}/builds/{build_id}/downloads/paper-{server_version}-{build_id}.jar", minecraft_dir+f"/paper-{server_version}-{build_id}.jar", user_agent="") == False:
                 return 3, ""
             start_jar = f"paper-{server_version}-{build_id}.jar"
