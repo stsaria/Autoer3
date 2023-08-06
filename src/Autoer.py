@@ -72,6 +72,9 @@ def main(args : list):
 
                 -unsupported-trans Autoerではないサーバーを-transのように移行できるモード
                 (方法 : -unsupported-trans [before_server_id_or_dir (移行元のサーバー)] [after_server_or_id (移行先のサーバー)] -minimum (必要最低限のファイル))
+                
+                -html サーバー一覧をHTMLに出力するモード
+                (方法 : -html)
 
                 ※server_id は サーバー作成時に発行されたID(-sl(サーバーリスト表示)でIDを確認することができます
         """
@@ -275,7 +278,7 @@ def main(args : list):
                 return result[0]
             else:
                 for i in result[2]:
-                    print(f"サーバーID : {i[0]}", f"サーバー名 : {i[1].replace('minecraft/', '')}", f"サーバーバージョン : {i[2]}")
+                    print(f"サーバーID : {i[0]}", f"サーバー名 : {i[1].replace('minecraft/', '')}", f"サーバーバージョン : {i[2]}", f"サーバーの場所(パス) : {i[4]}")
         if args[1] == "-r":
             if len(args) >= 5:
                 if not str(args[3]).isdigit() or not str(args[4]).isdigit():
@@ -326,6 +329,23 @@ def main(args : list):
                 else:
                     print("ファイルコピーに成功しました")
                     return 0
+        if args[1] == "-html":
+            result = ControlServer.make_html()
+            if result != 0:
+                error_text = ""
+                match result:
+                    case 1:
+                        error_text = "サーバーの管理ファイルが存在しません\n※ディレクトリはのターゲットは作成時と同じである必要があります"
+                    case 2:
+                        error_text = "サーバーの管理ファイルの中身が空です\n※ディレクトリはのターゲットは作成時と同じである必要があります"
+                    case 3:
+                        error_text = "HTMLの作成中にエラーが発生しました"
+                print("HTMLの作成に失敗しました\n"+error_text)
+                return result
+            else:
+                print("HTMLの作成に成功しました")
+                return 0
+            
 
 if __name__ == "__main__":
     signal.signal(signal.SIGTERM, raise_exception)

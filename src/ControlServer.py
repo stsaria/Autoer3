@@ -1,4 +1,5 @@
-import configparser, subprocess, platform, shutil, os, etc
+import configparser, subprocess, MakeServer, platform, shutil, socket, etc, os
+from PIL import Image
 
 def replace_func(fname, replace_set):
     target, replace = replace_set
@@ -271,4 +272,74 @@ def transfer_server(servers : list, is_minimum : bool, is_unsupported : bool):
                 shutil.copy2(f"{path[0]}/config.yml", path[1])
     except Exception as e:
         return 4
+    return 0
+
+def make_html():
+    result = server_list()
+    hostname = socket.gethostname()
+    if result[0] != 0:
+        return result[0]
+    try:
+        os.makedirs("./html", exist_ok=True)
+        for i in result[2]:
+            ico = "https://www.minecraft.net/etc.clientlibs/minecraft/clientlibs/main/resources/favicon.ico"
+            png = "https://www.minecraft.net/etc.clientlibs/minecraft/clientlibs/main/resources/apple-icon-72x72.png"
+            if os.path.isfile(f"{i[4]}/server-icon.png"):
+                png = f"{i[4]}/server-icon.png"
+                ico = f"{i[4]}/server-icon.ico"
+                img = Image.open(png)
+                img.save(ico, format="ICO", sizes=[(64, 64)])
+            
+            server_html = f"""
+            <!DOCTYPE html>
+            <html lang="ja">
+            <head>
+                <meta charset="UTF-8">
+                <link rel="icon" type="image/x-icon" sizes="64x64" href="{ico}">
+                <meta http-equiv="X-UA-Compatible" content="IE=edge">
+                <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                <title>{i[0]}</title>
+            </head>
+            <body>
+                <img src="{png}" width="64" height="64" style="float : left"/><h1>{i[0]}</h1>
+                <p>サーバーID : {i[0]}</br>
+                サーバー名 : {i[1]}</br>
+                サーバーバージョン : {i[2]}</br>
+                サーバーの場所(パス) : {i[4]}
+                </p>
+                <div>
+                <span style="float : left">・サーバーの起動方法&ensp;</span><span style="background-color : black; color : white; width : fit-content; float : left;">$ ./Autoer -r {i[0]} Xms Xmx</span>
+                </div>
+                </br>
+                <a href="index.html"><p style="float : left">ホームに戻る</p></a>
+            </body>
+            </html>
+            """
+            with open(f"./html/{i[0]}.html", mode='w', encoding='utf-8') as f:
+                f.write(server_html)
+
+        index_server_list_html = ""
+        for i in result[2]:
+            index_server_list_html = f"""{index_server_list_html}<a href="{i[0]}.html"><p>・サーバーID : {i[0]} サーバー名 : {i[1]}</p></a>\n"""
+        index_html = f"""
+        <!DOCTYPE html>
+        <html lang="ja">
+        <head>
+            <meta charset="UTF-8">
+            <meta http-equiv="X-UA-Compatible" content="IE=edge">
+            <meta name="viewport" content="width=device-width, initial-scale=1.0">
+            <title>{hostname}のAutoer</title>
+        </head>
+        <body>
+            <h1>{hostname}のAutoer3</h1>
+            <h2>サーバー一覧</h2>
+            {index_server_list_html}
+        </body>
+        </html>
+        """
+        with open(f"./html/index.html", mode='w', encoding='utf-8') as f:
+            f.write(index_html)
+    except Exception as e:
+        print(e)
+        return 3
     return 0
