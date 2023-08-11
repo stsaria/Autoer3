@@ -1,4 +1,4 @@
-import MakeServer, ControlServer, platform, requests, socket, signal, sys
+import MakeServer, ControlServer, platform, requests, socket, signal, sys, os
 from TextJudgement import true_false_string
 from Javasystem import check
 
@@ -32,6 +32,7 @@ def select_number(text : str, choices : list, return_text = []):
             return int(select)
 
 def main(args : list):
+    os.makedirs("data", exist_ok=True)
     if len(args) == 1:
         args_list_message = """
         Autoer -[s,m,bs,bm,R,r,cp,sl,sysdm,sysdr,se,trans,legacy-trans] [etc_args]
@@ -61,7 +62,7 @@ def main(args : list):
                 -sysdm,-sysds サーバーをSystemd Deamon,スタートアップに登録する(自動起動設定)(※管理者権限が必須です)
                 (方法 : -sysdm [server_id] [Xms (int)(最小メモリ)] [Xmx (int)(最大メモリ)] -screen (Screenでの起動(Windows以外)))
 
-                -sysdr サーバーのSystemd Deamon,スタートアップを削除する(自動起動設定)(※管理者権限が必須です)
+                -sysdr サーバーのSystemd Deamon,スタートアップを削除する(自動起動解除)(※管理者権限が必須です)
                 (方法 : -sysdr [server_id])
 
                 -se サーバー管理ファイルの編集モード(Minecraftでserver.propeties、Bungeecordでconfig.yml)

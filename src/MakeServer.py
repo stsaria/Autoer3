@@ -113,19 +113,39 @@ def install_forge_server(minecraft_dir, server_version, forge_id):
         result = 2
     return result
 
+def get_minecraft_versions():
+    if download_file("http://mcversions.net/mcversions.json", "data/version.json") == False:
+        return 1, [], []
+    try:
+        file = open('data/version.json', 'r')
+        json_object = json.load(file)
+        minecraft_editions = ["stable", "snapshot"]
+        minecraft_versions = [[], []]
+        for i in range(len(minecraft_editions)):
+            for j in range(len(list(json_object[minecraft_editions[i]]))):
+                if 'server' in json_object[minecraft_editions[i]][list(json_object[minecraft_editions[i]])[j]]:
+                    minecraft_versions[i].append(list(json_object[minecraft_editions[i]])[j])
+    except Exception as e:
+        print(e)
+        return 2, [], []
+    return 0, minecraft_versions[0], minecraft_versions[1]
+
 def get_minecraft_url(version):
     if download_file("http://mcversions.net/mcversions.json", "data/version.json") == False:
         return 1, ""
-    file = open('data/version.json', 'r')
-    json_object = json.load(file)
-    minecraft_editions = ["stable", "snapshot"]
-    successs = []
-    for minecraft_edition in minecraft_editions:
-        try:
-            minecraft_server_url = json_object[minecraft_edition][version]["server"]
-            successs.append(True)
-        except KeyError:
-            successs.append(False)
+    try:
+        file = open('data/version.json', 'r')
+        json_object = json.load(file)
+        minecraft_editions = ["stable", "snapshot"]
+        successs = []
+        for minecraft_edition in minecraft_editions:
+            try:
+                minecraft_server_url = json_object[minecraft_edition][version]["server"]
+                successs.append(True)
+            except KeyError:
+                successs.append(False)
+    except:
+        return 2, "not"
     if not successs[0] and not successs[1]:
         return 2, "not"
     return 0, minecraft_server_url
@@ -162,7 +182,6 @@ def make(server_name : str, server_port : int , server_version : str, edition : 
     minecraft_dir = "minecraft/minecraft-"+dt_now.strftime('%Y-%m-%d-%H-%M-%S-%f')
     absolute_path = os.getcwd().replace("\\", "/")
 
-    os.makedirs("data", exist_ok=True)
     os.makedirs(minecraft_dir, exist_ok=True)
 
     if message == True:
