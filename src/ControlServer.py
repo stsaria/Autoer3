@@ -274,13 +274,116 @@ def transfer_server(servers : list, is_minimum : bool, is_unsupported : bool):
         return 4
     return 0
 
-def make_html():
+def make_html(path = "./"):
+    readme_html = f"""<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>マニュアル</title>
+</head>
+<body>
+    <h1>Autoer3</h1>
+    <h2>Autoer3とAutoerとは</h2>
+    <p>
+        Autoer3とはAutoer系統のプログラムです
+        <br/>Autoerはマイクラを半自動作成するプログラムです
+    </p>
+
+    <h2>条件</h2>
+    <p>
+        1.ネットワーク環境がある
+        <br/>2.Python3.10以上
+        <br/>3.requestsがインストールされてる
+        <br/> ※実行ファイルの場合はインストール不要
+    </p>
+    
+    <h2>導入</h2>
+    <p>
+        1.Releaseからソースコードをダウンロードします
+        <br/>※実行ファイルでも問題ないです
+        <br/>2.Pythonのrequestsをダウンロードします
+        <br/><span style="background-color : black; color : white; width : fit-content;">$ pip install requests</span>
+        <br/>3.Autoerを実行します
+        <br/><span style="background-color : black; color : white; width : fit-content;">$ python src/Autoer.py</span>
+        <br/>もしくは
+        <br/><span style="background-color : black; color : white; width : fit-content;">$ ./Autoer</span>
+        <br/>次のように引数を与えずに実行すると引数の与え方の説明が出ます
+    </p>
+
+    <h2>注意</h2>
+    <p>
+        ・このプログラムを不正に使わないでください
+    </p>
+
+    <h2>引数の使い方</h2>
+    <span style="background-color : black; color : white; width : fit-content;">Autoer -[s,m,bs,bm,R,r,cp,sl,sysdm,sysdr,se,trans,legacy-trans] [etc_args]</span>
+                <h3>引数欄:</h3>
+                    <h4>起動モード:</h4>
+                        <p>
+                            -s,-m : 作成
+                            <br/>(方法 : <span style="background-color : black; color : white; width : fit-content;">-m [server_name (スペース, タブなし)] [server_port (1~65535)] [server_version (プレリリース版でも可※)] [eula (true or false)] [server_edition (vanilla, spigot, forge, paper)] [build_id (Forge※, PaperMC※ 使用時のみ)]</span>)
+                            <br/>※プレリリース版はForge, PaperMCとの組み合わせでは使えません
+                            <br/>※ForgeはBuildIDの取得ができません
+                            <br/>※PaperMCはBuildIDを省略すれば自動的に新しいjarファイルがダウンロードされます
+                            <br/>
+                            <br/>-bs,-bm : Bungeecordの作成
+                            <br/>(方法 : <span style="background-color : black; color : white; width : fit-content;">-bm [server_name (スペース, タブなし)] [server_port (1~65535)]</span>)
+                            <br/>
+                            <br/>-auto 限りなく自動に近いサーバー作成<br/>
+                            <br/>(方法 : <span style="background-color : black; color : white; width : fit-content;">-auto [server_name (スペース, タブなし)] [eula (true or false)]</span>)
+                            <br/>上記以外はこちらで作成されます
+                            <br/>Version : 最新
+                            <br/>Port : 25565
+                            <br/>Edithon : Vanilla
+                            <br/>管理者の場合は自動起動設定を実行します
+                            <br/>
+                            <br/>-R : 削除
+                            <br/>(方法 : <span style="background-color : black; color : white; width : fit-content;">-R [server_id]</span>)
+                            <br/>
+                            <br/>-r : 起動
+                            <br/>(方法 : <span style="background-color : black; color : white; width : fit-content;">-r [server_id] [Xms (int)(最小メモリ)] [Xmx (int)(最大メモリ)]</span>)
+                            <br/>
+                            <br/>-sl : サーバーリストの表示
+                            <br/>(方法 : <span style="background-color : black; color : white; width : fit-content;">-sl</span>)
+                            <br/>
+                            <br/>-cp : サーバーのポート変更
+                            <br/>(方法 : <span style="background-color : black; color : white; width : fit-content;">-cp [server_id] [server_new_port (1~65535)]</span>)
+                            <br/>
+                            <br/>-sysdm,-sysds サーバーをSystemd Deamon,スタートアップに登録する(自動起動設定)(※管理者権限が必須です)
+                            <br/>(方法 : <span style="background-color : black; color : white; width : fit-content;">-sysdm [server_id] [Xms (int)(最小メモリ)] [Xmx (int)(最大メモリ)] -screen (Screenでの起動(Windows以外))</span>)
+                            <br/>
+                            <br/>-sysdr サーバーのSystemd Deamon,スタートアップを削除する(自動起動解除)(※管理者権限が必須です)
+                            <br/>(方法 : <span style="background-color : black; color : white; width : fit-content;">-sysdr [server_id]</span>)
+                            <br/>
+                            <br/>-se サーバー管理ファイルの編集モード(Minecraftでserver.propeties、Bungeecordでconfig.yml)
+                            <br/>(方法 : <span style="background-color : black; color : white; width : fit-content;">-se [server_id] [editer(Windows以外)]</span>)
+                            <br/>
+                            <br/>-trans サーバーの情報を移行するモード(Minecraftでworld, world_nether, world_the_end, server.properties, spigot.yml(Spigot, Paperのみ)、Bungeecordでconfig.yml)
+                            <br/>(方法 : <span style="background-color : black; color : white; width : fit-content;">-trans [before_server_id (移行元のサーバー)] [after_server_id (移行先のサーバー)] -minimum (必要最低限のファイル)</span>)
+                            <br/>
+                            <br/>-unsupported-trans Autoerではないサーバーを-transのように移行できるモード
+                            <br/>(方法 : <span style="background-color : black; color : white; width : fit-content;">-unsupported-trans [before_server_id_or_dir (移行元のサーバー)] [after_server_or_id (移行先のサーバー)] -minimum (必要最低限のファイル)</span>)
+                            <br/>
+                            <br/>-html, -reload-html サーバー一覧をHTMLに出力するモード
+                            <br/>(方法 : <span style="background-color : black; color : white; width : fit-content;">-html [path(任意)]</span>)
+                            <br/>
+                            <br/>※server_id は サーバー作成時に発行されたID(-sl(サーバーリスト表示)でIDを確認することができます)
+                        </p>
+    <a href="../index.html"><p style="float : left">ホームに戻る</p></a>
+</body>
+</html>"""
+    
     result = server_list()
     hostname = socket.gethostname()
     if result[0] != 0:
         return result[0]
     try:
-        os.makedirs("./html", exist_ok=True)
+        os.makedirs(path+"/servers", exist_ok=True)
+        os.makedirs(path+"/manual", exist_ok=True)
+        with open(f"{path}/manual/readme.html", mode='w', encoding='utf-8') as f:
+            f.write(readme_html)
         for i in result[2]:
             ico = "https://www.minecraft.net/etc.clientlibs/minecraft/clientlibs/main/resources/favicon.ico"
             png = "https://www.minecraft.net/etc.clientlibs/minecraft/clientlibs/main/resources/apple-icon-72x72.png"
@@ -290,54 +393,56 @@ def make_html():
                 img = Image.open(png)
                 img.save(ico, format="ICO", sizes=[(64, 64)])
             
-            server_html = f"""
-            <!DOCTYPE html>
-            <html lang="ja">
-            <head>
-                <meta charset="UTF-8">
-                <link rel="icon" type="image/x-icon" sizes="64x64" href="{ico}">
-                <meta http-equiv="X-UA-Compatible" content="IE=edge">
-                <meta name="viewport" content="width=device-width, initial-scale=1.0">
-                <title>{i[0]}</title>
-            </head>
-            <body>
-                <img src="{png}" width="64" height="64" style="float : left"/><h1>{i[0]}</h1>
-                <p>サーバーID : {i[0]}</br>
-                サーバー名 : {i[1]}</br>
-                サーバーバージョン : {i[2]}</br>
-                サーバーの場所(パス) : {i[4]}
-                </p>
-                <div>
-                <span style="float : left">・サーバーの起動方法&ensp;</span><span style="background-color : black; color : white; width : fit-content; float : left;">$ ./Autoer -r {i[0]} Xms Xmx</span>
-                </div>
-                </br>
-                <a href="index.html"><p style="float : left">ホームに戻る</p></a>
-            </body>
-            </html>
-            """
-            with open(f"./html/{i[0]}.html", mode='w', encoding='utf-8') as f:
+            server_html = f"""<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <link rel="icon" type="image/x-icon" sizes="64x64" href="{ico}">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{i[0]}</title>
+</head>
+<body>
+    <img src="{png}" width="64" height="64" style="float : left"/><h1>{i[0]}</h1>
+    <p>サーバーID : {i[0]}</br>
+    サーバー名 : {i[1]}</br>
+    サーバーバージョン : {i[2]}</br>
+    サーバーの場所(パス) : {i[4]}
+    </p>
+    <div>
+    <span style="float : left">・サーバーの起動方法&ensp;</span><span style="background-color : black; color : white; width : fit-content; float : left;">$ ./Autoer -r {i[0]} Xms Xmx</span>
+    </div>
+    </br>
+    <div>
+    <span style="float : left">・サーバーの削除方法&ensp;</span><span style="background-color : black; color : white; width : fit-content; float : left;">$ ./Autoer -R {i[0]} Xms Xmx</span>
+    </div>
+    </br>
+    <a href="../index.html"><p style="float : left">ホームに戻る</p></a>
+</body>
+</html>"""
+            with open(f"{path}/servers/{i[0]}.html", mode='w', encoding='utf-8') as f:
                 f.write(server_html)
 
         index_server_list_html = ""
         for i in result[2]:
-            index_server_list_html = f"""{index_server_list_html}<a href="{i[0]}.html"><p>・サーバーID : {i[0]} サーバー名 : {i[1]}</p></a>\n"""
-        index_html = f"""
-        <!DOCTYPE html>
-        <html lang="ja">
-        <head>
-            <meta charset="UTF-8">
-            <meta http-equiv="X-UA-Compatible" content="IE=edge">
-            <meta name="viewport" content="width=device-width, initial-scale=1.0">
-            <title>{hostname}のAutoer</title>
-        </head>
-        <body>
-            <h1>{hostname}のAutoer3</h1>
-            <h2>サーバー一覧</h2>
-            {index_server_list_html}
-        </body>
-        </html>
-        """
-        with open(f"./html/index.html", mode='w', encoding='utf-8') as f:
+            index_server_list_html = f"""{index_server_list_html}<a href="servers/{i[0]}.html"><p>・サーバーID : {i[0]} サーバー名 : {i[1]}</p></a>\n    """
+        index_html = f"""<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{hostname}のAutoer</title>
+</head>
+<body>
+    <h1>{hostname}のAutoer3</h1>
+    <h2>サーバー一覧</h2>
+    {index_server_list_html}
+    <br/>
+    <a href="manual/readme.html"><h3>マニュアル</h3></a>
+</body>
+</html>"""
+        with open(f"{path}/index.html", mode='w', encoding='utf-8') as f:
             f.write(index_html)
     except Exception as e:
         print(e)

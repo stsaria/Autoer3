@@ -1,4 +1,4 @@
-import MakeServer, ControlServer, platform, requests, socket, signal, sys, os
+import MakeServer, ControlServer, platform, requests, socket, signal, etc, sys, os
 from TextJudgement import true_false_string
 from Javasystem import check
 
@@ -46,7 +46,15 @@ def main(args : list):
 
                 -bs,-bm : Bungeecordの作成
                 (方法 : -bm [server_name (スペース, タブなし)] [server_port (1~65535)])
-                
+
+                -auto 限りなく自動に近いサーバー作成
+                (方法 : -auto [server_name (スペース, タブなし)] [eula (true or false)])
+                上記以外はこちらで作成されます
+                Version : 最新
+                Port : 25565
+                Edithon : Vanilla
+                管理者の場合は自動起動設定を実行します
+
                 -R : 削除
                 (方法 : -R [server_id])
 
@@ -74,35 +82,32 @@ def main(args : list):
                 -unsupported-trans Autoerではないサーバーを-transのように移行できるモード
                 (方法 : -unsupported-trans [before_server_id_or_dir (移行元のサーバー)] [after_server_or_id (移行先のサーバー)] -minimum (必要最低限のファイル))
                 
-                -html サーバー一覧をHTMLに出力するモード
+                -html, -reload-html サーバー一覧をHTMLに出力するモード
                 (方法 : -html)
 
-                ※server_id は サーバー作成時に発行されたID(-sl(サーバーリスト表示)でIDを確認することができます
-        """
+                ※server_id は サーバー作成時に発行されたID(-sl(サーバーリスト表示)でIDを確認することができます"""
         print(args_list_message)
     else:
         if check.java_version()[0] == False:
             print("Javaがインストールされていません")
             return 7
-
-        if args[1] == "-s" or args[1] == "-m":
-            if len(args) - 2 >= 5:
-                build_id = ""
-                if len(args) - 2 >= 6:
-                    build_id = args[7]
-                if not str(args[3]).isdigit():
-                    print("入力フォーマットが間違っています")
-                    return 7
-                sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-                return_code = sock.connect_ex(("127.0.0.1", int(args[3])))
-                sock.close()
-                if return_code == 0:
-                    print("警告 : このポートは使用されています")
-                try:
-                    result = MakeServer.make(str(args[2]), int(str(args[3])), str(args[4]), str(args[6]), True, true_false_string(str(args[5])), str(build_id))
-                except InterruptedError:
-                    print("入力フォーマットが間違っています")
-                    return 7
+        if args[1] == "-s" or args[1] == "-m" and len(args) >= 7:
+            build_id = ""
+            if len(args) >= 8:
+                build_id = args[7]
+            if not str(args[3]).isdigit():
+                print("入力フォーマットが間違っています")
+                return 7
+            sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+            return_code = sock.connect_ex(("127.0.0.1", int(args[3])))
+            sock.close()
+            if return_code == 0:
+                print("警告 : このポートは使用されています")
+            try:
+                result = MakeServer.make(str(args[2]), int(str(args[3])), str(args[4]), str(args[6]), True, true_false_string(str(args[5])), str(build_id))
+            except InterruptedError:
+                print("入力フォーマットが間違っています")
+                return 7
             if result[0] != 0:
                 error_text = ""
                 match result[0]:
@@ -123,49 +128,46 @@ def main(args : list):
             else:
                 print(f"サーバーの作成に成功しました\n作成したサーバーID : {result[1]}")
                 return 0
-        if args[1] == "-bm" or args[1] == "-bs":
-            if len(args) - 2 >= 2:
-                if not str(args[3]).isdigit():
-                    print("入力フォーマットが間違っています")
-                    return 7
-                sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-                return_code = sock.connect_ex(("127.0.0.1", int(args[3])))
-                sock.close()
-                if return_code == 0:
-                    print("警告 : このポートは使用されています")
-                result = MakeServer.install_bungeecord_server(str(args[2]), int(str(args[3])))
-                if result[0] != 0:
-                    error_text = ""
-                    match result[0]:
-                        case 1:
-                            error_text = "サーバーファイルのダウンロードに失敗しました"
-                        case 2:
-                            error_text = "ファイルの書き込み中にエラーが発生しました"
-                    print(f"サーバーの作成に失敗しました\n{error_text}")
-                    return result[0]
-                else:
-                    print(f"サーバーの作成に成功しました\n作成したサーバーID : {result[1]}")
-                    return 0
-        if args[1] == "-se":
+        if args[1] == "-bm" or args[1] == "-bs" and len(args) >= 4:
+            if not str(args[3]).isdigit():
+                print("入力フォーマットが間違っています")
+                return 7
+            sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+            return_code = sock.connect_ex(("127.0.0.1", int(args[3])))
+            sock.close()
+            if return_code == 0:
+                print("警告 : このポートは使用されています")
+            result = MakeServer.install_bungeecord_server(str(args[2]), int(str(args[3])))
+            if result[0] != 0:
+                error_text = ""
+                match result[0]:
+                    case 1:
+                        error_text = "サーバーファイルのダウンロードに失敗しました"
+                    case 2:
+                        error_text = "ファイルの書き込み中にエラーが発生しました"
+                print(f"サーバーの作成に失敗しました\n{error_text}")
+                return result[0]
+            else:
+                print(f"サーバーの作成に成功しました\n作成したサーバーID : {result[1]}")
+                return 0
+        if args[1] == "-se" and len(args) >= 3:
             editer = ""
-            if len(args) - 2 >= 1:
-                if len(args) - 2 >= 2:
-                    editer = str(args[3])
-                result = ControlServer.edit_server(str(args[2]), editer)
-                if result != 0:
-                    error_text = ""
-                    match result:
-                        case 1:
-                            error_text = "サーバーが見つかりませんでした"
-                        case 2:
-                            error_text = "ファイルの書き込みに失敗しました"
-                    print(f"サーバーファイルの編集に失敗しました\n{error_text}")
-                    return result
-                else:
-                    print(f"サーバーファイルの編集が終了しました")
-                    return 0
-
-        if args[1] == "-R":
+            if len(args) >= 4:
+                editer = str(args[3])
+            result = ControlServer.edit_server(str(args[2]), editer)
+            if result != 0:
+                error_text = ""
+                match result:
+                    case 1:
+                        error_text = "サーバーが見つかりませんでした"
+                    case 2:
+                        error_text = "ファイルの書き込みに失敗しました"
+                print(f"サーバーファイルの編集に失敗しました\n{error_text}")
+                return result
+            else:
+                print(f"サーバーファイルの編集が終了しました")
+                return 0
+        if args[1] == "-R" and len(args) >= 3:
             result = ControlServer.del_server(str(args[2]))
             if result != 0:
                 error_text = ""
@@ -183,89 +185,86 @@ def main(args : list):
             else:
                 print("サーバーの削除に成功しました\n※自動起動設定に関しては削除していません")
                 return 0
-        if args[1] == "-cp":
-            if len(args) >= 4:
-                if not str(args[3]).isdigit():
-                    print("入力フォーマットが間違っています")
-                    return 7
-                result = ControlServer.change_port(args[2], int(args[3]))
-                if result != 0:
-                    error_text = ""
-                    match result:
-                        case 1:
-                            error_text = "サーバーの管理ファイルが存在しません\n※ディレクトリはのターゲットは作成時と同じである必要があります"
-                        case 2:
-                            error_text = "サーバーの管理ファイルの中身が空です\n※ディレクトリはのターゲットは作成時と同じである必要があります"
-                        case 3:
-                            error_text = "指定したサーバーがありません"
-                        case 4:
-                            error_text = "サーバー設定ファイル(server.properties)が存在しません\n※ディレクトリはのターゲットは作成時と同じである必要があります"
-                        case 5:
-                            error_text = "ファイルの書き込み中にエラーが発生しました"
-                        case 6:
-                            error_text = "ポートの番号が範囲外です\n※ポート番号は1~65535までです"
-                    print("ポートの変更に失敗しました\n"+error_text)
-                    return result
-                else:
-                    print("ポートの変更に成功しました")
-                    return 0
-        if args[1] == "-sysdm" or args[1] == "-sysds":
+        if args[1] == "-cp" and len(args) >= 4:
+            if not str(args[3]).isdigit():
+                print("入力フォーマットが間違っています")
+                return 7
+            result = ControlServer.change_port(args[2], int(args[3]))
+            if result != 0:
+                error_text = ""
+                match result:
+                    case 1:
+                        error_text = "サーバーの管理ファイルが存在しません\n※ディレクトリはのターゲットは作成時と同じである必要があります"
+                    case 2:
+                        error_text = "サーバーの管理ファイルの中身が空です\n※ディレクトリはのターゲットは作成時と同じである必要があります"
+                    case 3:
+                        error_text = "指定したサーバーがありません"
+                    case 4:
+                        error_text = "サーバー設定ファイル(server.properties)が存在しません\n※ディレクトリはのターゲットは作成時と同じである必要があります"
+                    case 5:
+                        error_text = "ファイルの書き込み中にエラーが発生しました"
+                    case 6:
+                        error_text = "ポートの番号が範囲外です\n※ポート番号は1~65535までです"
+                print("ポートの変更に失敗しました\n"+error_text)
+                return result
+            else:
+                print("ポートの変更に成功しました")
+                return 0
+        if args[1] == "-sysdm" or args[1] == "-sysds" and len(args) >= 5:
             systemd_mode = 0
-            if len(args) >= 5:
-                if not str(args[3]).isdigit() or not str(args[4]).isdigit():
-                    print("入力フォーマットが間違っています")
-                    return 7
-                if len(args) >= 6:
-                    if args[5] == "-screen":
-                        systemd_mode = 1
-                result = ControlServer.add_startup(args[2], args[0], int(args[3]), int(args[4]), systemd_mode)
-                if result != 0:
-                    error_text = ""
-                    match result:
-                        case 1:
-                            error_text = "サーバーの管理ファイルが存在しません\n※ディレクトリはのターゲットは作成時と同じである必要があります"
-                        case 2:
-                            error_text = "サーバーの管理ファイルの中身が空です\n※ディレクトリはのターゲットは作成時と同じである必要があります"
-                        case 3:
-                            error_text = "管理者で実行されていません"
-                        case 4:
-                            error_text = "指定したサーバーがありません"
-                        case 5:
-                            error_text = "メモリが1GBより少ないです"
-                        case 6:
-                            error_text = "自動起動設定中にエラーが発生しました"
-                    print("自動起動設定に失敗しました\n"+error_text)
-                    return result
-                else:
-                    print("自動起動設定に成功しました\n※まだ起動していませんのでご注意ください")
-                    if not platform.system() == "Windows":
-                        print(f"立ち上げ : systemctl start {args[2]}\n終了 : systemctl stop {args[2]}\n動作状況表示 : systemctl status {args[2]}")
-                        if systemd_mode == 1:
-                            print(f"マイクラのコンソールを表示するときは以下のコマンドをお使いください\nscreen -r {args[2]}\n終了する際はCtrl+A+Dです")
-                    return 0
-        if args[1] == "-sysdr":
-            if len(args) >= 3:
-                result = ControlServer.del_startup(args[2])
-                if result != 0:
-                    error_text = ""
-                    match result:
-                        case 1:
-                            error_text = "サーバーの管理ファイルが存在しません\n※ディレクトリはのターゲットは作成時と同じである必要があります"
-                        case 2:
-                            error_text = "サーバーの管理ファイルの中身が空です\n※ディレクトリはのターゲットは作成時と同じである必要があります"
-                        case 3:
-                            error_text = "管理者で実行されていません"
-                        case 4:
-                            error_text = "指定したサーバーがありません"
-                        case 5:
-                            error_text = "指定したサーバーは自動起動設定されていません"
-                        case 6:
-                            error_text = "自動起動解除中にエラーが発生しました"
-                    print("自動起動解除に失敗しました\n"+error_text)
-                    return result
-                else:
-                    print("自動起動解除に成功しました")
-                    return 0
+            if not str(args[3]).isdigit() or not str(args[4]).isdigit():
+                print("入力フォーマットが間違っています")
+                return 7
+            if len(args) >= 6:
+                if args[5] == "-screen":
+                    systemd_mode = 1
+            result = ControlServer.add_startup(args[2], args[0], int(args[3]), int(args[4]), systemd_mode)
+            if result != 0:
+                error_text = ""
+                match result:
+                    case 1:
+                        error_text = "サーバーの管理ファイルが存在しません\n※ディレクトリはのターゲットは作成時と同じである必要があります"
+                    case 2:
+                        error_text = "サーバーの管理ファイルの中身が空です\n※ディレクトリはのターゲットは作成時と同じである必要があります"
+                    case 3:
+                        error_text = "管理者で実行されていません"
+                    case 4:
+                        error_text = "指定したサーバーがありません"
+                    case 5:
+                        error_text = "メモリが1GBより少ないです"
+                    case 6:
+                        error_text = "自動起動設定中にエラーが発生しました"
+                print("自動起動設定に失敗しました\n"+error_text)
+                return result
+            else:
+                print("自動起動設定に成功しました\n※まだ起動していませんのでご注意ください")
+                if not platform.system() == "Windows":
+                    print(f"立ち上げ : systemctl start {args[2]}\n終了 : systemctl stop {args[2]}\n動作状況表示 : systemctl status {args[2]}")
+                    if systemd_mode == 1:
+                        print(f"マイクラのコンソールを表示するときは以下のコマンドをお使いください\nscreen -r {args[2]}\n終了する際はCtrl+A+Dです")
+                return 0
+        if args[1] == "-sysdr" and len(args) >= 3:
+            result = ControlServer.del_startup(args[2])
+            if result != 0:
+                error_text = ""
+                match result:
+                    case 1:
+                        error_text = "サーバーの管理ファイルが存在しません\n※ディレクトリはのターゲットは作成時と同じである必要があります"
+                    case 2:
+                        error_text = "サーバーの管理ファイルの中身が空です\n※ディレクトリはのターゲットは作成時と同じである必要があります"
+                    case 3:
+                        error_text = "管理者で実行されていません"
+                    case 4:
+                        error_text = "指定したサーバーがありません"
+                    case 5:
+                        error_text = "指定したサーバーは自動起動設定されていません"
+                    case 6:
+                        error_text = "自動起動解除中にエラーが発生しました"
+                print("自動起動解除に失敗しました\n"+error_text)
+                return result
+            else:
+                print("自動起動解除に成功しました")
+                return 0
         if args[1] == "-sl":
             result = ControlServer.server_list()
             if result[0] != 0:
@@ -280,58 +279,156 @@ def main(args : list):
             else:
                 for i in result[2]:
                     print(f"サーバーID : {i[0]}", f"サーバー名 : {i[1].replace('minecraft/', '')}", f"サーバーバージョン : {i[2]}", f"サーバーの場所(パス) : {i[4]}")
-        if args[1] == "-r":
+        if args[1] == "-r" and len(args) >= 5:
+            if not str(args[3]).isdigit() or not str(args[4]).isdigit():
+                print("入力フォーマットが間違っています")
+                return 7
+            result = ControlServer.start_server(args[2], int(args[3]), int(args[4]))
+            if result != 0:
+                error_text = ""
+                match result:
+                    case 1:
+                        error_text = "サーバーの管理ファイルが存在しません\n※ディレクトリはのターゲットは作成時と同じである必要があります"
+                    case 2:
+                        error_text = "サーバーの管理ファイルの中身が空です\n※ディレクトリはのターゲットは作成時と同じである必要があります"
+                    case 3:
+                        error_text = "指定したサーバーがありません"
+                    case 4:
+                        error_text = "メモリが1GBより少ないです"
+                    case 5:
+                        error_text = "マイクラサーバー動作中にエラーが発生しました"
+                print("マイクラサーバーが異常終了しました\n"+error_text)
+                return result
+            else:
+                print("マイクラサーバーが正常終了しました")
+                return 0
+        if args[1] == "-trans"or args[1] == "-unsupported-trans" and len(args) >= 4:
+            is_minimum = False
             if len(args) >= 5:
-                if not str(args[3]).isdigit() or not str(args[4]).isdigit():
-                    print("入力フォーマットが間違っています")
-                    return 7
-                result = ControlServer.start_server(args[2], int(args[3]), int(args[4]))
-                if result != 0:
-                    error_text = ""
-                    match result:
-                        case 1:
-                            error_text = "サーバーの管理ファイルが存在しません\n※ディレクトリはのターゲットは作成時と同じである必要があります"
-                        case 2:
-                            error_text = "サーバーの管理ファイルの中身が空です\n※ディレクトリはのターゲットは作成時と同じである必要があります"
-                        case 3:
-                            error_text = "指定したサーバーがありません"
-                        case 4:
-                            error_text = "メモリが1GBより少ないです"
-                        case 5:
-                            error_text = "マイクラサーバー動作中にエラーが発生しました"
-                    print("マイクラサーバーが異常終了しました\n"+error_text)
-                    return result
-                else:
-                    print("マイクラサーバーが正常終了しました")
-                    return 0
-        if args[1] == "-trans"or args[1] == "-unsupported-trans":
+                if args[4] == "-minimum":
+                    is_minimum = True
+            if args[1] == "-trans":
+                result = ControlServer.transfer_server([args[2], args[3]], is_minimum, False)
+            elif args[1] == "-unsupported-trans":
+                result = ControlServer.transfer_server([args[2], args[3]], is_minimum, True)
+            if result != 0:
+                error_text = ""
+                match result:
+                    case 1:
+                        error_text = "サーバーの管理ファイルが存在しません\n※ディレクトリはのターゲットは作成時と同じである必要があります"
+                    case 2:
+                        error_text = "サーバーの管理ファイルの中身が空です\n※ディレクトリはのターゲットは作成時と同じである必要があります"
+                    case 3:
+                        error_text = "指定したサーバーがありません"
+                    case 4:
+                        error_text = "ファイルコピー中にエラーが発生しました"
+                print("ファイルコピーに失敗しました\n"+error_text)
+                return result
+            else:
+                print("ファイルコピーに成功しました")
+                return 0
+        if args[1] == "-auto" and len(args) >= 3:
+            eula = False
             if len(args) >= 4:
-                is_minimum = False
-                if len(args) >= 5:
-                    if args[4] == "-minimum":
-                        is_minimum = True
-                if args[1] == "-trans":
-                    result = ControlServer.transfer_server([args[2], args[3]], is_minimum, False)
-                elif args[1] == "-unsupported-trans":
-                    result = ControlServer.transfer_server([args[2], args[3]], is_minimum, True)
-                if result != 0:
-                    error_text = ""
-                    match result:
-                        case 1:
-                            error_text = "サーバーの管理ファイルが存在しません\n※ディレクトリはのターゲットは作成時と同じである必要があります"
-                        case 2:
-                            error_text = "サーバーの管理ファイルの中身が空です\n※ディレクトリはのターゲットは作成時と同じである必要があります"
-                        case 3:
-                            error_text = "指定したサーバーがありません"
-                        case 4:
-                            error_text = "ファイルコピー中にエラーが発生しました"
-                    print("ファイルコピーに失敗しました\n"+error_text)
-                    return result
-                else:
-                    print("ファイルコピーに成功しました")
-                    return 0
-        if args[1] == "-html":
-            result = ControlServer.make_html()
+                if args[3].lower() == "true":
+                    eula = True
+            result, stable_server_versions, snapshot_server_versions = MakeServer.get_minecraft_versions()
+            if result != 0:
+                error_text = ""
+                match result:
+                    case 1:
+                        error_text = "サーバーのバージョン一覧ファイルのダウンロードに失敗しました"
+                    case 2:
+                        error_text = "サーバーのバージョンの一覧中にエラーが発生しました"
+                print("サーバーの作成に失敗しました\n"+error_text)
+                return result + 6
+            sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+            return_code = sock.connect_ex(("127.0.0.1", 25565))
+            sock.close()
+            if return_code == 0:
+                print("警告 : このポートは使用されています")
+            result = MakeServer.make(args[2], 25565, stable_server_versions[0], "vanilla", True, eula, "")
+            if result[0] != 0:
+                error_text = ""
+                match result[0]:
+                    case 1:
+                        error_text = "特定不能のエラーです"
+                    case 2:
+                        error_text = "特定不能なサーバーバージョンです"
+                    case 3:
+                        error_text = "サーバーファイルのダウンロードに失敗しました"
+                    case 4:
+                        error_text = "BuildToolsの実行時にエラーが発生しました"
+                    case 5:
+                        error_text = "Forgeインストール時にエラーが発生しました"
+                    case 6:
+                        error_text = "ファイルの書き込み中にエラーが発生しました"
+                print(f"サーバーの作成に失敗しました\n{error_text}")
+                return result[0]
+            else:
+                print(f"サーバーの作成に成功しました\n作成したサーバーID : {result[1]}")
+            result = ControlServer.add_startup(result[1], args[0], 2, 2, 0)
+            if result != 0:
+                error_text = ""
+                match result:
+                    case 1:
+                        error_text = "サーバーの管理ファイルが存在しません\n※ディレクトリはのターゲットは作成時と同じである必要があります"
+                    case 2:
+                        error_text = "サーバーの管理ファイルの中身が空です\n※ディレクトリはのターゲットは作成時と同じである必要があります"
+                    case 3:
+                        error_text = "管理者で実行されていないので設定はスキップします"
+                    case 4:
+                        error_text = "指定したサーバーがありません"
+                    case 5:
+                        error_text = "メモリが1GBより少ないです"
+                    case 6:
+                        error_text = "自動起動設定中にエラーが発生しました"
+                print("自動起動設定に失敗しました\n"+error_text)
+                return result
+            else:
+                print("自動起動設定に成功しました\n※まだ起動していませんのでご注意ください")
+                if not platform.system() == "Windows":
+                    print(f"立ち上げ : systemctl start {args[2]}\n終了 : systemctl stop {args[2]}\n動作状況表示 : systemctl status {args[2]}")
+                    if systemd_mode == 1:
+                        print(f"マイクラのコンソールを表示するときは以下のコマンドをお使いください\nscreen -r {args[2]}\n終了する際はCtrl+A+Dです")
+            return 0
+        
+        if args[1] == "-bm" or args[1] == "-bs" and len(args) >= 4:
+            if not str(args[3]).isdigit():
+                print("入力フォーマットが間違っています")
+                return 7
+            sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+            return_code = sock.connect_ex(("127.0.0.1", int(args[3])))
+            sock.close()
+            if return_code == 0:
+                print("警告 : このポートは使用されています")
+            result = MakeServer.install_bungeecord_server(str(args[2]), int(str(args[3])))
+            if result[0] != 0:
+                error_text = ""
+                match result[0]:
+                    case 1:
+                        error_text = "サーバーファイルのダウンロードに失敗しました"
+                    case 2:
+                        error_text = "ファイルの書き込み中にエラーが発生しました"
+                print(f"サーバーの作成に失敗しました\n{error_text}")
+                return result[0]
+            else:
+                print(f"サーバーの作成に成功しました\n作成したサーバーID : {result[1]}")
+                return 0
+            
+        if args[1] == "-html" or args[1] == "-reload-html":
+            path = "./html"
+            if len(args) >= 3:
+                args[2] = args[2].replace("\\", "/")
+                if os.path.isdir(args[2]):
+                    path = args[2]
+            else:
+                try:
+                    os.makedirs(args[2], exist_ok=True)
+                    path = args[2]
+                except:
+                    pass
+            result = ControlServer.make_html(path)
             if result != 0:
                 error_text = ""
                 match result:
@@ -346,7 +443,6 @@ def main(args : list):
             else:
                 print("HTMLの作成に成功しました")
                 return 0
-            
 
 if __name__ == "__main__":
     signal.signal(signal.SIGTERM, raise_exception)

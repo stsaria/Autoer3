@@ -1,8 +1,6 @@
 import datetime, requests, shutil, getpass, json, os
 from Javasystem.etc import exec_java
 
-backslash = '\\'
-
 def download_file(url : str, save_name : str, user_agent = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.114 Safari/537.36"):
     try:
         if "http" in url == False:
@@ -68,7 +66,6 @@ connection_throttle: 4000
 stats: 25e4c7af-20e1-4c5b-82c6-3397aadd0a4b
 connection_throttle_limit: 3
 log_pings: true"""
-
     dt_now        = datetime.datetime.now()
     bungeecord_dir = "minecraft/bungeecord-"+dt_now.strftime('%Y-%m-%d-%H-%M-%S-%f')
     absolute_path = os.getcwd().replace("\\", "/")
@@ -79,11 +76,11 @@ log_pings: true"""
     if download_file("https://ci.md-5.net/job/BungeeCord/lastSuccessfulBuild/artifact/bootstrap/target/BungeeCord.jar", bungeecord_dir+"/BungeeCord.jar") == False:
         return 1, ""
     try:
-        with open(bungeecord_dir+"/config.yml", mode='w') as f:
+        with open(bungeecord_dir+"/config.yml", mode='w', encoding='utf-8') as f:
             f.write(bungeecord_first_text)
-        with open("./data/setting.ini", mode='a') as f:
+        with open("./data/setting.ini", mode='a', encoding='utf-8') as f:
             f.write(f"[{bungeecord_dir.lower()}]\nserver_name = {server_name}\nversion = lastSuccessfulBuild\nstart_jar = BungeeCord.jar\nabsolute_path = {absolute_path}/{bungeecord_dir}\nmake_user = {getpass.getuser()}\n")
-        f = open("./data/unsetting.ini", 'a')
+        f = open("./data/unsetting.ini", mode='a', encoding='utf-8')
         f.write("")
         f.close()
     except:
@@ -152,7 +149,7 @@ def get_minecraft_url(version):
 
 def replace_func(fname, replace_set):
     target, replace = replace_set
-    with open(fname, 'r') as f1:
+    with open(fname, 'r', encoding='utf-8') as f1:
         tmp_list =[]
         for row in f1:
             if row.find(target) != -1:
@@ -253,11 +250,11 @@ def make(server_name : str, server_port : int , server_version : str, edition : 
     try:
         file_identification_rewriting(minecraft_dir+"/server.properties", "server-port=", "server-port="+str(server_port)+"\n")
         file_identification_rewriting(minecraft_dir+"/server.properties", "motd=", "motd="+server_name+"\n")
-        with open(minecraft_dir+"/eula.txt", mode='a') as f:
+        with open(minecraft_dir+"/eula.txt", mode='a', encoding='utf-8') as f:
             f.write("#By changing the setting below to TRUE you are indicating your agreement to our EULA (https://account.mojang.com/documents/minecraft_eula).\n#"+dt_now_utc.strftime('%a')+" "+dt_now_utc.strftime('%b')+" "+dt_now_utc.strftime('%d')+" "+dt_now_utc.strftime('%H:%M:%S')+" "+str(dt_now_utc.tzinfo)+" "+dt_now_utc.strftime('%Y')+"\neula="+str(eula))
-        with open("./data/setting.ini", mode='a') as f:
+        with open("./data/setting.ini", mode='a', encoding='utf-8') as f:
             f.write(f"[{minecraft_dir.lower()}]\nserver_name = {server_name}\nversion = {server_version}\nstart_jar = {start_jar}\nabsolute_path = {absolute_path}/{minecraft_dir}\nmake_user = {getpass.getuser()}\n")
-        f = open("./data/unsetting.ini", 'a')
+        f = open("./data/unsetting.ini", 'a', encoding='utf-8')
         f.write("")
         f.close()
 
