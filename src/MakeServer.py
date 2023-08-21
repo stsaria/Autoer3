@@ -112,7 +112,7 @@ def install_forge_server(minecraft_dir, server_version, forge_id):
 
 def get_minecraft_versions():
     if download_file("http://mcversions.net/mcversions.json", "data/version.json") == False:
-        return 1, [], []
+        return 1, [[]], [[]]
     try:
         file = open('data/version.json', 'r')
         json_object = json.load(file)
@@ -124,12 +124,12 @@ def get_minecraft_versions():
                     minecraft_versions[i].append(list(json_object[minecraft_editions[i]])[j])
     except Exception as e:
         print(e)
-        return 2, [], []
+        return 2, [[]], [[]]
     return 0, minecraft_versions[0], minecraft_versions[1]
 
 def get_minecraft_url(version):
     if download_file("http://mcversions.net/mcversions.json", "data/version.json") == False:
-        return 1, ""
+        return 1, "not"
     try:
         file = open('data/version.json', 'r')
         json_object = json.load(file)
@@ -182,10 +182,9 @@ def make(server_name : str, server_port : int , server_version : str, edition : 
     os.makedirs(minecraft_dir, exist_ok=True)
 
     if message == True:
-        print("しばらくお待ち下さい。\n回線の状況によっては時間が長くなる可能性もあります。")
+        print("しばらくお待ち下さい。\n回線の状況によっては時間が長くなる可能性もあります。\n")
     result, server_url = get_minecraft_url(server_version)
     if result != 0:
-        print("a")
         if result == 1:
             return 3, ""
         elif result == 2:

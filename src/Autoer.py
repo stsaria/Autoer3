@@ -1,4 +1,4 @@
-import MakeServer, ControlServer, platform, requests, socket, signal, etc, sys, os
+import MakeServer, ControlServer, platform, requests, socket, signal, sys, os
 from TextJudgement import true_false_string
 from Javasystem import check
 
@@ -328,6 +328,7 @@ def main(args : list):
                 print("ファイルコピーに成功しました")
                 return 0
         if args[1] == "-auto" and len(args) >= 3:
+            success = []
             eula = False
             if len(args) >= 4:
                 if args[3].lower() == "true":
@@ -340,13 +341,13 @@ def main(args : list):
                         error_text = "サーバーのバージョン一覧ファイルのダウンロードに失敗しました"
                     case 2:
                         error_text = "サーバーのバージョンの一覧中にエラーが発生しました"
-                print("サーバーの作成に失敗しました\n"+error_text)
-                return result + 6
+                print(f"サーバーの作成に失敗しました\n{error_text}\n")
+                success.append(False)
             sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
             return_code = sock.connect_ex(("127.0.0.1", 25565))
             sock.close()
             if return_code == 0:
-                print("警告 : このポートは使用されています")
+                print("警告 : このポートは使用されています\n")
             result = MakeServer.make(args[2], 25565, stable_server_versions[0], "vanilla", True, eula, "")
             if result[0] != 0:
                 error_text = ""
@@ -363,10 +364,11 @@ def main(args : list):
                         error_text = "Forgeインストール時にエラーが発生しました"
                     case 6:
                         error_text = "ファイルの書き込み中にエラーが発生しました"
-                print(f"サーバーの作成に失敗しました\n{error_text}")
-                return result[0]
+                print(f"サーバーの作成に失敗しました\n{error_text}\n")
+                success[0] = False
             else:
-                print(f"サーバーの作成に成功しました\n作成したサーバーID : {result[1]}")
+                print(f"サーバーの作成に成功しました\n作成したサーバーID : {result[1]}\n")
+                success.append(True)
             result = ControlServer.add_startup(result[1], args[0], 2, 2, 0)
             if result != 0:
                 error_text = ""
@@ -383,15 +385,44 @@ def main(args : list):
                         error_text = "メモリが1GBより少ないです"
                     case 6:
                         error_text = "自動起動設定中にエラーが発生しました"
-                print("自動起動設定に失敗しました\n"+error_text)
-                return result
+                print(f"自動起動設定に失敗しました\n{error_text}\n")
+                success.append(False)
             else:
-                print("自動起動設定に成功しました\n※まだ起動していませんのでご注意ください")
+                print("自動起動設定に成功しました\n※まだ起動していませんのでご注意ください\n")
                 if not platform.system() == "Windows":
-                    print(f"立ち上げ : systemctl start {args[2]}\n終了 : systemctl stop {args[2]}\n動作状況表示 : systemctl status {args[2]}")
+                    print(f"立ち上げ : systemctl start {args[2]}\n終了 : systemctl stop {args[2]}\n動作状況表示 : systemctl status {args[2]}\n")
                     if systemd_mode == 1:
-                        print(f"マイクラのコンソールを表示するときは以下のコマンドをお使いください\nscreen -r {args[2]}\n終了する際はCtrl+A+Dです")
-            return 0
+                        print(f"マイクラのコンソールを表示するときは以下のコマンドをお使いください\nscreen -r {args[2]}\n終了する際はCtrl+A+Dです\n")
+                success.append(True)
+            result = ControlServer.make_html("./html")
+            if result != 0:
+                error_text = ""
+                match result:
+                    case 1:
+                        error_text = "サーバーの管理ファイルが存在しません\n※ディレクトリはのターゲットは作成時と同じである必要があります"
+                    case 2:
+                        error_text = "サーバーの管理ファイルの中身が空です\n※ディレクトリはのターゲットは作成時と同じである必要があります"
+                    case 3:
+                        error_text = "HTMLの作成中にエラーが発生しました"
+                print(f"HTMLの作成に失敗しました\n{error_text}\n")
+                success.append(False)
+            else:
+                print("HTMLの作成に成功しました\n")
+                success.append(True)
+            message = []
+            for i in success:
+                if i == True:
+                    message.append("OK")
+                else:
+                    message.append("Error")
+            print(f"Server Create : {message[0]}\nSystemd Setting : {message[1]}\nHTML Make : {message[2]}\n")
+            
+            if success.count(True) >= 2:
+                print("作成に成功しました")
+                return 1
+            else:
+                print("作成に失敗しました")
+                return 0
         
         if args[1] == "-bm" or args[1] == "-bs" and len(args) >= 4:
             if not str(args[3]).isdigit():

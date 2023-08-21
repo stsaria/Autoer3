@@ -1,4 +1,4 @@
-import configparser, subprocess, MakeServer, platform, shutil, socket, etc, os
+import configparser, subprocess, platform, shutil, socket, etc, os
 from PIL import Image
 
 def replace_func(fname, replace_set):
@@ -380,19 +380,24 @@ def make_html(path = "./"):
     if result[0] != 0:
         return result[0]
     try:
-        os.makedirs(path+"/servers", exist_ok=True)
-        os.makedirs(path+"/manual", exist_ok=True)
+        os.makedirs(f"{path}/servers", exist_ok=True)
+        os.makedirs(f"{path}/manual", exist_ok=True)
+        os.makedirs(f"{path}/img", exist_ok=True)
         with open(f"{path}/manual/readme.html", mode='w', encoding='utf-8') as f:
             f.write(readme_html)
         for i in result[2]:
             ico = "https://www.minecraft.net/etc.clientlibs/minecraft/clientlibs/main/resources/favicon.ico"
             png = "https://www.minecraft.net/etc.clientlibs/minecraft/clientlibs/main/resources/apple-icon-72x72.png"
             if os.path.isfile(f"{i[4]}/server-icon.png"):
-                png = f"{i[4]}/server-icon.png"
-                ico = f"{i[4]}/server-icon.ico"
+                png = f"{path}/img/{i[0]}-server-icon.png"
+                ico = f"{path}/img/{i[0]}-server-icon.ico"
+                shutil.copyfile(f"{i[4]}/server-icon.png", f"{path}/img/{i[0]}-server-icon.png")
+
                 img = Image.open(png)
                 img.save(ico, format="ICO", sizes=[(64, 64)])
-            
+                
+                ico = f"../img/{i[0]}-server-icon.ico"
+                png = f"../img/{i[0]}-server-icon.png"
             server_html = f"""<!DOCTYPE html>
 <html lang="ja">
 <head>
@@ -403,7 +408,7 @@ def make_html(path = "./"):
     <title>{i[0]}</title>
 </head>
 <body>
-    <img src="{png}" width="64" height="64" style="float : left"/><h1>{i[0]}</h1>
+    <img src="{png}" width="64" height="64" style="float : left"/> <h1>{i[1]} - {i[0]}</h1>
     <p>サーバーID : {i[0]}</br>
     サーバー名 : {i[1]}</br>
     サーバーバージョン : {i[2]}</br>
